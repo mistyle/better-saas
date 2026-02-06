@@ -1,4 +1,4 @@
-import { SecurityContent } from '@/themes/default/components/settings/security-content';
+import { SecurityContent } from '@/themes/default/pages/security';
 
 export default function Security() {
   return <SecurityContent />;

@@ -33,10 +33,6 @@ export const navbarConfig: NavbarConfig = {
         url: '/docs',
       },
       {
-        title: 'menu.components', // i18n key
-        url: '/blocks',
-      },
-      {
         title: 'menu.pricing', // i18n key
         url: '#pricing',
         onClick: 'handlePricingClick', // Special handler

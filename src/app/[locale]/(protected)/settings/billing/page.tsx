@@ -1,4 +1,4 @@
-import { BillingPage } from '@/themes/default/components/billing/billing-page';
+import { BillingPage } from '@/themes/default/pages/billing';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Suspense } from 'react';

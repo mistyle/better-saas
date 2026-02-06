@@ -206,13 +206,12 @@
   },
   "navbar": {
     "logo": {
-      "title": "Suit Photo",
+      "title": "Better-SaaS",
       "alt": "logo"
     },
     "menu": {
       "blog": "博客",
       "document": "文档",
-      "components": "组件",
       "pricing": "定价",
       "resources": "资源",
       "helpCenter": "帮助中心",
@@ -416,11 +415,5 @@
         "content": "如果您对此隐私政策有任何疑问，请联系我们。"
       }
     }
-  },
-  "blocks": {
-    "title": "组件库",
-    "description": "探索我们精心设计的组件集合，每个组件都经过优化，可直接在您的项目中使用",
-    "viewComponents": "查看组件",
-    "backToBlocks": "返回组件库"
   }
 }

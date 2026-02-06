@@ -709,7 +709,7 @@ export function BillingInfo({ subscription }: { subscription: any }) {
 ```tsx
 // src/app/[locale]/dashboard/page.tsx
 import { getTranslations } from 'next-intl/server'
-import { DashboardContent } from '@/themes/default/components/dashboard/dashboard-content'
+import { DashboardContent } from '@/themes/default/pages/dashboard'
 
 export default async function DashboardPage() {
   const t = await getTranslations('dashboard')

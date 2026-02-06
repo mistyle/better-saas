@@ -53,7 +53,6 @@ export const i18nConfig: I18nConfig = {
     'security',
     'faq',
     'blog',
-    'blocks',
     'legal',
     'fileManager'
   ],

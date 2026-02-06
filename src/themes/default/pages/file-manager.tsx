@@ -7,9 +7,9 @@ import { useFiles } from '@/hooks/use-files';
 import type { FileInfo } from '@/lib/files/file-service';
 import { Search, Upload } from 'lucide-react';
 import { useState } from 'react';
-import { FileTable } from './file-table';
-import { FileUpload } from './file-upload';
-import { ImagePreviewModal } from './image-preview-modal';
+import { FileTable } from '../blocks/file-table';
+import { FileUpload } from '../blocks/file-upload';
+import { ImagePreviewModal } from '../blocks/image-preview-modal';
 import { useAppConfig } from '@/hooks/use-config';
 import { useTranslations } from 'next-intl';
 

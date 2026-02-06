@@ -9,7 +9,7 @@
  *   2. Fall back to the "default" theme
  *   3. Throw if neither provides the module
  *
- * Supported categories: blocks, layouts, pages, components
+ * Supported categories: blocks, layouts, pages
  */
 
 import { themeNames, type ThemeName } from './registry';
@@ -24,7 +24,7 @@ export function getActiveTheme(): ThemeName {
   return DEFAULT_THEME;
 }
 
-type ThemeCategory = 'blocks' | 'layouts' | 'pages' | 'components';
+type ThemeCategory = 'blocks' | 'layouts' | 'pages';
 
 /**
  * Generic theme module loader with fallback.
@@ -78,12 +78,4 @@ export async function getThemeLayout(layoutName: string) {
  */
 export async function getThemePage(pageName: string) {
   return loadThemeModule('pages', pageName);
-}
-
-/**
- * Load a sub-component from the active theme (fallback → default).
- * Path is relative to themes/<name>/components/, e.g. "settings/profile-content".
- */
-export async function getThemeComponent(componentPath: string) {
-  return loadThemeModule('components', componentPath);
 }

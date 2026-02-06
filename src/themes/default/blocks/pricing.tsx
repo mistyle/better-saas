@@ -16,7 +16,7 @@ import { useTransition } from 'react';
 import { ErrorLogger } from '@/lib/logger/logger-utils';
 import { usePaymentPlans } from '@/hooks/use-config';
 import { Badge } from '@/components/ui/badge';
-import { PurchaseConfirmationDialog } from '@/themes/default/components/payment/purchase-confirmation-dialog';
+import { PurchaseConfirmationDialog } from '@/themes/default/blocks/purchase-confirmation-dialog';
 
 const pricingErrorLogger = new ErrorLogger('pricing');
 

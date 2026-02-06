@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { CreditsPage } from '@/themes/default/components/credits/credits-page';
-import { CreditsPageSkeleton } from '@/themes/default/components/credits/credits-skeleton';
+import { CreditsPage } from '@/themes/default/pages/credits';
+import { CreditsPageSkeleton } from '@/themes/default/blocks/credits-skeleton';
 
 export default function CreditsPageRoute() {
   return (

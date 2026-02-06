@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { SubscriptionCard } from '@/themes/default/components/payment/subscription-card';
+import { SubscriptionCard } from '@/themes/default/blocks/subscription-card';
 import { getBillingInfo } from '@/server/actions/payment/get-billing-info';
 import type { BillingInfo } from '@/server/actions/payment/get-billing-info';
 import { useEffect, useState, useCallback } from 'react';

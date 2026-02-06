@@ -206,13 +206,12 @@
   },
   "navbar": {
     "logo": {
-      "title": "Suit Photo",
+      "title": "Better-SaaS",
       "alt": "logo"
     },
     "menu": {
       "blog": "Blog",
       "document": "Document",
-      "components": "Components",
       "pricing": "Pricing",
       "resources": "Resources",
       "helpCenter": "Help Center",
@@ -416,11 +415,5 @@
         "content": "If you have any questions about this Privacy Policy, please contact us. support@suitphoto.com"
       }
     }
-  },
-  "blocks": {
-    "title": "Component Library",
-    "description": "Explore our carefully designed component collection, each optimized for direct use in your projects",
-    "viewComponents": "View components",
-    "backToBlocks": "Back to Blocks"
   }
 }

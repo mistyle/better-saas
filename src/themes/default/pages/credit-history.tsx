@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download } from 'lucide-react';
-import { CreditHistory } from './credit-history';
+import { CreditHistory } from '../blocks/credit-history';
 import { useRouter } from '@/i18n/navigation';
 
 export function CreditHistoryPage() {

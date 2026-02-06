@@ -1,6 +1,6 @@
 'use client';
 
-import { DashboardHeader } from '@/themes/default/components/dashboard/dashboard-header';
+import { DashboardHeader } from '@/themes/default/blocks/dashboard-header';
 import { cn } from '@/lib/utils';
 import type { ProtectedContainerProps } from '@/types';
 import { useState } from 'react';
