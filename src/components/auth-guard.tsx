@@ -5,11 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   useAuthLoading,
-  useAuthError,
   useIsAuthenticated,
   useAuthInitialized, 
-  useRefreshSession 
-} from '@/store/auth-store';
+} from '@/lib/auth/use-auth';
 import { AlertCircle, Loader2, Lock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -32,9 +30,7 @@ export function AuthGuard({
 }: AuthGuardProps) {
   const isAuthenticated = useIsAuthenticated();
   const isLoading = useAuthLoading();
-  const error = useAuthError();
   const isInitialized = useAuthInitialized();
-  const refreshSession = useRefreshSession();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -71,33 +67,6 @@ export function AuthGuard({
             <p className="mt-4 text-muted-foreground text-sm">
               {t('loading')}
             </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (error && !isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-              <AlertCircle className="h-6 w-6 text-destructive" />
-            </div>
-            <CardTitle>{t('error')}</CardTitle>
-            <CardDescription>{error}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <Button onClick={() => refreshSession()} className="w-full">
-              {t('refreshSession')}
-            </Button>
-            <Button variant="outline" onClick={() => router.push(redirectTo)} className="w-full">
-              {t('goToLogin')}
-            </Button>
-            <Button variant="ghost" onClick={() => window.location.reload()} className="w-full">
-              {t('retry')}
-            </Button>
           </CardContent>
         </Card>
       </div>

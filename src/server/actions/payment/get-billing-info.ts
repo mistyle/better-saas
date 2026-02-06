@@ -1,9 +1,8 @@
 'use server';
 
-import { auth } from '@/lib/auth/auth';
+import { getServerSession } from '@/lib/auth/server-session';
 import { paymentRepository } from '@/server/db/repositories/payment-repository';
 import type { ActionResult, PaymentRecord } from '@/payment/types';
-import { headers } from 'next/headers';
 import { ErrorLogger } from '@/lib/logger/logger-utils';
 
 const billingErrorLogger = new ErrorLogger('billing-info');
@@ -17,9 +16,7 @@ export async function getBillingInfo(): Promise<ActionResult<BillingInfo>> {
   let session: { user?: { id: string } } | null = null;
 
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getServerSession();
     if (!session?.user) {
       return {
         success: false,
@@ -58,9 +55,7 @@ export async function getUserSubscription(): Promise<ActionResult<PaymentRecord 
   let session: { user?: { id: string } } | null = null;
 
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getServerSession();
     if (!session?.user) {
       return {
         success: false,

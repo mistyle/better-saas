@@ -10,7 +10,6 @@ src/
 ├── components/     # 共享 UI 组件（可被任意主题复用）
 ├── config/         # 应用配置（静态配置，不含业务逻辑）
 ├── content/        # MDX 内容（文档、博客）
-├── core/           # 框架核心机制（主题引擎等，不可随意修改）
 ├── hooks/          # 客户端自定义 Hooks
 ├── i18n/           # 国际化路由与消息
 ├── lib/            # 工具函数与第三方服务封装
@@ -63,22 +62,13 @@ app/
 └── not-found.tsx                # 全局 404
 ```
 
-### `components/` — 共享 UI 组件
+### `components/` — 共享 UI 与功能组件
 
-存放可被所有主题复用的组件。按功能域分目录，每个目录聚焦单一关注点。
+存放可被所有主题复用的 UI 基础组件和功能域组件。**不含着陆页区块**（已移至 `themes/`）。
 
 ```
 components/
 ├── ui/                # shadcn/ui 基础组件（Button, Card, Dialog...）
-├── blocks/            # 着陆页区块组件（Hero, Footer, Navbar, Pricing, FAQ...）
-│   ├── hero/
-│   ├── navbar/
-│   ├── footer/
-│   ├── pricing/
-│   ├── faq/
-│   ├── features/
-│   ├── login/
-│   └── signup/
 ├── dashboard/         # 仪表盘组件
 ├── settings/          # 设置页组件
 ├── billing/           # 计费页组件
@@ -98,58 +88,46 @@ components/
 
 ### `config/` — 应用配置
 
-纯静态配置，不含业务逻辑。运行时配置通过环境变量注入。
+纯静态配置，不含业务逻辑。运行时配置通过环境变量注入。仅保留实际在运行时消费的配置项。
 
 ```
 config/
 ├── index.ts           # 配置入口（统一导出）
-├── app.config.ts      # 应用基础配置（名称、URL、元数据）
-├── features.config.ts # 功能开关
+├── app.config.ts      # 应用基础配置（名称、URL、元数据、管理员）
+├── features.config.ts # 功能开关（fileManager、admin）
 ├── i18n.config.ts     # 国际化配置
-├── theme.config.ts    # 主题配色配置（dark/light/system + 调色板）
-├── theme/index.ts     # 主题系统注册表（themeNames）
-├── navbar.config.ts   # 导航栏配置
-├── payment.config.ts  # 支付配置（计划、价格）
-└── credits.config.ts  # 积分配置
-```
-
-### `core/` — 框架核心
-
-放置框架级基础设施代码，**一般不需要修改**。
-
-```
-core/
-└── theme/
-    └── index.ts       # 主题加载引擎
-                       # getActiveTheme() / getThemeBlock() /
-                       # getThemeLayout() / getThemePage()
-                       # 自动 fallback 到 default 主题
+├── appearance.config.ts   # 颜色模式配置（dark/light/system）
+├── navbar.config.ts
+├── payment.config.ts
+└── credits.config.ts
 ```
 
 ### `themes/` — 主题系统
 
-每个主题是一个独立目录，包含 blocks / layouts / pages 三个子目录。`default` 主题作为兜底。
+主题系统的所有代码集中在此：加载引擎、注册表、主题实现。`default` 主题作为兜底。
 
 ```
 themes/
-└── default/           # 默认主题
-    ├── blocks/        # 区块组件（re-export 或自定义实现）
+├── loader.ts              # 主题加载引擎（getThemeBlock / getThemeLayout / getThemePage）
+├── registry.ts            # 主题注册表（themeNames、ThemeName 类型）
+└── default/               # 默认主题
+    ├── blocks/
     │   ├── index.tsx  # 统一导出
-    │   ├── hero.tsx
-    │   ├── footer.tsx
-    │   ├── navbar.tsx
-    │   ├── pricing.tsx
-    │   ├── faq.tsx
-    │   ├── features.tsx
-    │   ├── tech-stack.tsx
-    │   ├── login.tsx
-    │   └── signup.tsx
+    │   ├── hero.tsx   # 首页 Hero 区块
+    │   ├── footer.tsx # 页脚
+    │   ├── navbar.tsx # 导航栏（含 Navbar + NavbarWrapper）
+    │   ├── pricing.tsx# 定价方案
+    │   ├── faq.tsx    # 常见问题
+    │   ├── features.tsx # 特性展示
+    │   ├── tech-stack.tsx # 技术栈展示
+    │   ├── login.tsx  # 登录表单
+    │   └── signup.tsx # 注册表单
     ├── layouts/       # 布局组件
     │   ├── index.tsx
-    │   └── landing.tsx
+    │   └── landing.tsx # 着陆页布局（Navbar + Footer + children）
     └── pages/         # 页面组件
         ├── index.tsx
-        └── home.tsx
+        └── home.tsx   # 首页（Hero + TechStack + Pricing + Faq）
 ```
 
 **创建新主题**：运行 `./scripts/create-theme.sh <theme-name>`，会从 default 复制并注册。
@@ -201,7 +179,6 @@ lib/
 ├── utils.ts           # 通用工具（cn, formatters）
 ├── icons.ts           # 图标 re-export
 ├── blocks-registry.ts # 组件展示注册表
-├── config-validation.ts # 配置校验（zod schemas）
 ├── auth/              # Better-Auth 封装
 │   ├── auth.ts        # 服务端 auth 实例
 │   ├── auth-client.ts # 客户端 auth 实例
@@ -298,11 +275,14 @@ content/
 ### 2. 主题系统分层
 
 ```
-core/theme/     → 引擎（不修改）
-config/theme/   → 注册表（注册新主题名）
-themes/         → 主题实现（blocks / layouts / pages）
-components/     → 共享组件（所有主题可复用）
+themes/loader.ts    → 加载引擎（动态导入 + fallback）
+themes/registry.ts  → 注册表（注册新主题名）
+themes/<name>/      → 主题实现（blocks / layouts / pages）
+components/         → 共享 UI 组件（所有主题可复用）
+config/appearance   → 颜色模式（dark/light/system，与主题皮肤无关）
 ```
+
+区块组件（Hero, Navbar, Footer 等）直接存放在 `themes/<theme>/blocks/` 中。每个主题拥有自己的区块实现，共享的 UI 基础组件（shadcn/ui）仍在 `components/ui/` 中。
 
 ### 3. 服务端/客户端分离
 

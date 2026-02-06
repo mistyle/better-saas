@@ -1,10 +1,9 @@
 'use server';
 
-import { auth } from '@/lib/auth/auth';
+import { getServerSession } from '@/lib/auth/server-session';
 import { StripeProvider } from '@/payment/stripe/provider';
 import { paymentRepository } from '@/server/db/repositories/payment-repository';
 import type { ActionResult } from '@/payment/types';
-import { headers } from 'next/headers';
 import { ErrorLogger } from '@/lib/logger/logger-utils';
 import type { SubscriptionWithPeriod } from '@/types/stripe-extended';
 
@@ -14,9 +13,7 @@ export async function syncSubscriptionPeriods(): Promise<ActionResult<{ updated:
   let session: { user?: { id: string } } | null = null;
   
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getServerSession();
     if (!session?.user) {
       return {
         success: false,
@@ -87,9 +84,7 @@ export async function syncSingleSubscription(subscriptionId: string): Promise<Ac
   let session: { user?: { id: string } } | null = null;
   
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getServerSession();
     if (!session?.user) {
       return {
         success: false,

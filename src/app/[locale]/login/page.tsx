@@ -1,6 +1,6 @@
 'use client';
 
-import { LoginForm } from '@/components/blocks/login/login-form';
+import { LoginForm } from '@/themes/default/blocks/login';
 import { useLogin } from '@/hooks/use-login';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';

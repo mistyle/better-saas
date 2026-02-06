@@ -7,7 +7,7 @@ import {
   useAuthLoading,
   useIsAuthenticated,
   useAuthInitialized
-} from '@/store/auth-store';
+} from '@/lib/auth/use-auth';
 import { useIsAdmin } from '@/components/auth/permission-provider';
 import { Shield, ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';

@@ -2,7 +2,7 @@
 
 import { AdminGuard } from '@/components/admin-guard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserList } from '@/components/dashboard/user-list';
+import { UserList } from '@/themes/default/components/dashboard/user-list';
 import { getUserStats, type UserStats } from '@/server/actions/user-actions';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';

@@ -1,10 +1,10 @@
 'use client';
 
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { DashboardHeader } from '@/themes/default/components/dashboard/dashboard-header';
 import { cn } from '@/lib/utils';
 import type { ProtectedContainerProps } from '@/types';
 import { useState } from 'react';
-import { ProtectedSidebar } from './protected-sidebar';
+import { ProtectedSidebar } from '@/themes/default/layouts/protected-sidebar';
 
 export function ProtectedContainer({ children, sidebarGroups }: ProtectedContainerProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

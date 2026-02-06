@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { SimpleApiKeyManager } from '@/components/api-keys/simple-api-key-manager';
-import { ApiUsageGuide } from '@/components/api-keys/api-usage-guide';
+import { SimpleApiKeyManager } from '@/themes/default/components/api-keys/simple-api-key-manager';
+import { ApiUsageGuide } from '@/themes/default/components/api-keys/api-usage-guide';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('settings.apiKeys');

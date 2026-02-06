@@ -1,6 +1,6 @@
 'use client';
 
-import { ProtectedContainer } from '@/components/dashboard/protected-container';
+import { ProtectedContainer } from '@/themes/default/components/dashboard/protected-container';
 import { useIsAdmin } from '@/components/auth/permission-provider';
 import type { SidebarGroup } from '@/types';
 import { Coins, History, CreditCard, Files, Shield, Users, Key } from 'lucide-react';

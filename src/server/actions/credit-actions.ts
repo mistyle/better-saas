@@ -1,7 +1,6 @@
 'use server';
 
-import { auth } from '@/lib/auth/auth';
-import { headers } from 'next/headers';
+import { getServerSession } from '@/lib/auth/server-session';
 import { creditService } from '@/lib/credits';
 import { paymentRepository } from '@/server/db/repositories/payment-repository';
 import type { ActionResult } from '@/payment/types';
@@ -39,9 +38,7 @@ export interface GetQuotaUsageResponse {
  */
 export async function getCreditBalance(): Promise<ActionResult<GetCreditBalanceResponse>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getServerSession();
 
     if (!session?.user) {
       return {
@@ -75,9 +72,7 @@ export async function getCreditHistory(
   params: GetCreditHistoryParams = {}
 ): Promise<ActionResult<CreditTransaction[]>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getServerSession();
 
     if (!session?.user) {
       return {
@@ -111,9 +106,7 @@ export async function getCreditHistory(
  */
 export async function getQuotaUsage(): Promise<ActionResult<GetQuotaUsageResponse>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getServerSession();
 
     if (!session?.user) {
       return {
@@ -201,9 +194,7 @@ export async function grantCreditsToUser(
   description?: string
 ): Promise<ActionResult<CreditTransaction>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getServerSession();
 
     if (!session?.user) {
       return {
@@ -268,9 +259,7 @@ export async function spendCredits(
   referenceId?: string
 ): Promise<ActionResult<CreditTransaction>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getServerSession();
 
     if (!session?.user) {
       return {
@@ -328,9 +317,7 @@ export async function updateUserQuotaUsage(
   amount: number
 ): Promise<ActionResult<{ used: number; service: QuotaService }>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getServerSession();
 
     if (!session?.user) {
       return {
@@ -366,9 +353,7 @@ export async function updateUserQuotaUsage(
  */
 export async function initializeUserQuotaUsage(): Promise<ActionResult<{ message: string }>> {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await getServerSession();
 
     if (!session?.user) {
       return {

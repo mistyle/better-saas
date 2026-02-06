@@ -1,18 +1,13 @@
 'use client';
 
-import { useInitialize } from '@/store/auth-store';
-import { useEffect } from 'react';
-
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
+/**
+ * Auth state is now managed by better-auth's useSession() hook.
+ * This provider is kept as a thin wrapper for future extensibility.
+ */
 export function AuthProvider({ children }: AuthProviderProps) {
-  const initialize = useInitialize();
-
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
   return <>{children}</>;
 }

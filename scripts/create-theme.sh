@@ -1,14 +1,26 @@
 #!/bin/bash
 # Script to scaffold a new theme by copying from the default theme
-# Usage: ./scripts/create-theme.sh <theme-name>
+# Usage: ./scripts/create-theme.sh <theme-name> [--minimal]
+#
+# Options:
+#   --minimal   Only create the directory structure with index files,
+#               no component copies. All components fall back to default.
 
 set -e
 
 THEME_NAME="$1"
+MINIMAL=false
+
+if [ "$2" = "--minimal" ]; then
+  MINIMAL=true
+fi
 
 if [ -z "$THEME_NAME" ]; then
-  echo "Usage: $0 <theme-name>"
-  echo "Example: $0 my-brand"
+  echo "Usage: $0 <theme-name> [--minimal]"
+  echo ""
+  echo "Examples:"
+  echo "  $0 my-brand            # Full copy of default theme"
+  echo "  $0 my-brand --minimal  # Minimal scaffold (fallback to default)"
   exit 1
 fi
 
@@ -28,12 +40,28 @@ fi
 
 echo "Creating theme '$THEME_NAME' from default..."
 
-# Copy the default theme
-cp -r "$THEMES_DIR/default" "$TARGET_DIR"
+if [ "$MINIMAL" = true ]; then
+  # Minimal mode: create directory structure only
+  mkdir -p "$TARGET_DIR/blocks"
+  mkdir -p "$TARGET_DIR/layouts"
+  mkdir -p "$TARGET_DIR/pages"
+  mkdir -p "$TARGET_DIR/components"
 
-# Register the theme in src/config/theme/index.ts
-REGISTRY_FILE="src/config/theme/index.ts"
-sed -i.bak "s/export const themeNames = \['default'\]/export const themeNames = ['default', '$THEME_NAME']/" "$REGISTRY_FILE"
+  # Create placeholder index files
+  echo "// $THEME_NAME theme - blocks" > "$TARGET_DIR/blocks/index.tsx"
+  echo "// $THEME_NAME theme - layouts" > "$TARGET_DIR/layouts/index.tsx"
+  echo "// $THEME_NAME theme - pages" > "$TARGET_DIR/pages/index.tsx"
+
+  echo "(minimal mode: only directory structure created, all components fall back to default)"
+else
+  # Full mode: copy the entire default theme
+  cp -r "$THEMES_DIR/default" "$TARGET_DIR"
+fi
+
+# Register the theme in src/themes/registry.ts
+REGISTRY_FILE="src/themes/registry.ts"
+# Handle both single and multiple existing themes
+sed -i.bak "s/\] as const;/, '$THEME_NAME'] as const;/" "$REGISTRY_FILE"
 rm -f "$REGISTRY_FILE.bak"
 
 echo ""
@@ -46,5 +74,9 @@ echo "Next steps:"
 echo "  1. Customize blocks in $TARGET_DIR/blocks/"
 echo "  2. Customize layouts in $TARGET_DIR/layouts/"
 echo "  3. Customize pages in $TARGET_DIR/pages/"
-echo "  4. Set NEXT_PUBLIC_THEME=$THEME_NAME in your .env file"
-echo "  5. Run 'pnpm build' to validate"
+echo "  4. Customize components in $TARGET_DIR/components/"
+echo "  5. Set NEXT_PUBLIC_THEME=$THEME_NAME in your .env file"
+echo "  6. Run 'pnpm build' to validate"
+echo ""
+echo "Tip: You only need to create files for components you want to override."
+echo "     Missing components automatically fall back to the default theme."

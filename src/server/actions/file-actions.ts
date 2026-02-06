@@ -1,6 +1,6 @@
 'use server';
 
-import { auth } from '@/lib/auth/auth';
+import { getServerSession } from '@/lib/auth/server-session';
 import { isAdmin } from '@/lib/auth/permissions';
 import {
   uploadFile,
@@ -9,7 +9,6 @@ import {
   getFileInfo,
   type FileInfo,
 } from '@/lib/files/file-service';
-import { headers } from 'next/headers';
 import { getErrorMessage } from './error-messages';
 import { ErrorLogger } from '@/lib/logger/logger-utils';
 import type { User } from 'better-auth/types';
@@ -42,9 +41,7 @@ export async function uploadFileAction(formData: FormData): Promise<FileUploadRe
   let file: File | null = null;
 
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getServerSession();
 
     if (!session?.user) {
       throw new Error(await getErrorMessage('unauthorizedAccess'));
@@ -82,9 +79,7 @@ export async function deleteFileAction(fileId: string): Promise<FileDeleteRespon
   let session: { user?: User } | null = null;
 
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getServerSession();
 
     if (!session?.user) {
       throw new Error(await getErrorMessage('unauthorizedAccess'));
@@ -127,9 +122,7 @@ export async function getFileListAction(
   let session: { user?: User } | null = null;
 
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getServerSession();
 
     if (!session?.user) {
       throw new Error(await getErrorMessage('unauthorizedAccess'));
@@ -167,9 +160,7 @@ export async function getFileInfoAction(fileId: string): Promise<FileInfo> {
   let session: { user?: User } | null = null;
 
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getServerSession();
 
     if (!session?.user) {
       throw new Error(await getErrorMessage('unauthorizedAccess'));

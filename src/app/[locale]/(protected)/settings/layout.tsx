@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { AuthGuard } from '@/components/auth-guard';
-import { ProtectedLayoutClient } from '@/components/dashboard/protected-layout-client';
+import { ProtectedLayoutClient } from '@/themes/default/layouts/protected';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 import PermissionWrapper from '@/components/auth/permission-wrapper';
 import { Suspense } from 'react';

@@ -1,6 +1,6 @@
 
 import { useParams, useRouter } from 'next/navigation';
-import { useAuthInitialized, useAuthLoading, useIsAuthenticated } from '@/store/auth-store';
+import { useAuthInitialized, useAuthLoading, useIsAuthenticated } from '@/lib/auth/use-auth';
 import { useNavbarConfig } from '@/hooks/use-config';
 import { Book, Sunset, Trees, Zap } from 'lucide-react';
 import { createElement } from 'react';

@@ -1,7 +1,7 @@
-import { Hero } from '@/components/blocks/hero/hero';
-import { TechStack } from '@/components/blocks/tech-stack';
-import { Pricing } from '@/components/blocks/pricing/pricing';
-import { Faq } from '@/components/blocks/faq/faq';
+import { Hero } from '../blocks/hero';
+import { TechStack } from '../blocks/tech-stack';
+import { Pricing } from '../blocks/pricing';
+import { Faq } from '../blocks/faq';
 
 export function HomePage() {
   return (

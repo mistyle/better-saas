@@ -1,9 +1,9 @@
-import { Faq } from '@/components/blocks/faq/faq';
-import { Features } from '@/components/blocks/features/features';
-import { Footer } from '@/components/blocks/footer/footer';
-import { Hero } from '@/components/blocks/hero/hero';
-import { Pricing } from '@/components/blocks/pricing/pricing';
-import { TechStack } from '@/components/blocks/tech-stack';
+import { Faq } from '@/themes/default/blocks/faq';
+import { Features } from '@/themes/default/blocks/features';
+import { Footer } from '@/themes/default/blocks/footer';
+import { Hero } from '@/themes/default/blocks/hero';
+import { Pricing } from '@/themes/default/blocks/pricing';
+import { TechStack } from '@/themes/default/blocks/tech-stack';
 import { ComponentPreviewWrapper } from './component-preview-wrapper';
 
 interface ServerComponentPreviewProps {

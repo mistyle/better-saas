@@ -2,7 +2,7 @@ import { ArrowLeft, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { ServerComponentPreview } from '@/components/preview/server-component-preview';
+import { ServerComponentPreview } from '@/themes/default/components/preview/server-component-preview';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 

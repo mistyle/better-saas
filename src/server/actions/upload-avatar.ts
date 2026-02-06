@@ -1,7 +1,6 @@
 'use server';
 
-import { auth } from '@/lib/auth/auth';
-import { headers } from 'next/headers';
+import { getServerSession } from '@/lib/auth/server-session';
 import { getErrorMessage } from './error-messages';
 import { uploadFile } from '@/lib/files/file-service';
 import { ErrorLogger } from '@/lib/logger/logger-utils';
@@ -14,9 +13,7 @@ export async function uploadAvatarAction(formData: FormData) {
   let file: File | null = null;
   
   try {
-    session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    session = await getServerSession();
 
     if (!session?.user) {
       throw new Error(await getErrorMessage('unauthorizedAccess'));

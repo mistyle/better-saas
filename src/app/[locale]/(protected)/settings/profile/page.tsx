@@ -1,6 +1,6 @@
 'use client';
 
-import { ProfileContent } from '@/components/settings/profile-content';
+import { ProfileContent } from '@/themes/default/components/settings/profile-content';
 import { useProfile } from '@/hooks/use-profile';
 import { Loader2 } from 'lucide-react';
 

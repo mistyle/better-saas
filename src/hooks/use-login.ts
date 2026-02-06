@@ -1,14 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  useAuthLoading, 
-  useAuthError, 
-  useIsAuthenticated,
-  useEmailLogin,
-  useClearError,
-  useSignInWithGithub,
-  useSignInWithGoogle
-} from '@/store/auth-store';
+import { authClient } from '@/lib/auth/auth-client';
+import { useIsAuthenticated, useAuthLoading } from '@/lib/auth/use-auth';
 import type { LoginFormData, UseLoginReturn } from '@/types/login';
 import { useToastMessages } from './use-toast-messages';
 import { ErrorLogger } from '@/lib/logger/logger-utils';
@@ -21,17 +14,14 @@ export function useLogin(): UseLoginReturn {
   const toastMessages = useToastMessages();
   
   const isLoading = useAuthLoading();
-  const error = useAuthError();
   const isAuthenticated = useIsAuthenticated();
-  const emailLogin = useEmailLogin();
-  const clearError = useClearError();
-  const signInWithGithub = useSignInWithGithub();
-  const signInWithGoogle = useSignInWithGoogle();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
   });
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get callback URL
   const getRedirectUrl = useCallback(() => {
@@ -50,14 +40,10 @@ export function useLogin(): UseLoginReturn {
   // Handle social login
   const handleSocialLogin = async (provider: 'github' | 'google') => {
     try {
-      clearError();   
-      if (provider === 'github') {
-        await signInWithGithub();
-      } else {
-        await signInWithGoogle();
-      }
-    } catch (error) {
-      loginErrorLogger.logError(error as Error, {
+      setError(null);
+      await authClient.signIn.social({ provider });
+    } catch (err) {
+      loginErrorLogger.logError(err as Error, {
         operation: 'socialLogin',
         provider,
       });
@@ -68,27 +54,42 @@ export function useLogin(): UseLoginReturn {
   // Handle email login
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError(); 
+    setError(null);
+    setIsSubmitting(true);
 
-    const result = await emailLogin(formData.email, formData.password);
-    if (result.success) {
-      toastMessages.success.loginSuccess();
-      const redirectUrl = getRedirectUrl();
-      router.push(redirectUrl);
-    } else {
-      toastMessages.error.loginFailed(result.error);
+    try {
+      const result = await authClient.signIn.email({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (result.data) {
+        toastMessages.success.loginSuccess();
+        const redirectUrl = getRedirectUrl();
+        router.push(redirectUrl);
+      } else {
+        const msg = result.error?.message || 'Login failed';
+        setError(msg);
+        toastMessages.error.loginFailed(msg);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Login failed';
+      setError(msg);
+      toastMessages.error.loginFailed(msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Clear error
   const handleClearError = () => {
-    clearError();
+    setError(null);
   };
 
   return {
     formData,
     setFormData,
-    isLoading,
+    isLoading: isLoading || isSubmitting,
     error,
     isAuthenticated,
     handleEmailLogin,

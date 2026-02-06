@@ -1,8 +1,7 @@
 'use server';
 
-import { auth } from '@/lib/auth/auth';
+import { getServerSession } from '@/lib/auth/server-session';
 import { isAdmin } from '@/lib/auth/permissions';
-import { headers } from 'next/headers';
 
 /**
  * Get user admin status on server side
@@ -11,10 +10,7 @@ import { headers } from 'next/headers';
  */
 export async function getUserAdminStatus(): Promise<boolean> {
   try {
-    const headersList = await headers();
-    const session = await auth.api.getSession({
-      headers: headersList,
-    });
+    const session = await getServerSession();
 
     if (!session?.user) {
       return false;
@@ -22,7 +18,6 @@ export async function getUserAdminStatus(): Promise<boolean> {
 
     return isAdmin(session.user);
   } catch (error) {
-    // Only log the error type and message, not the full error object
     console.error('Error getting user admin status:', {
       name: error instanceof Error ? error.name : 'Unknown',
       message: error instanceof Error ? error.message : 'Unknown error',

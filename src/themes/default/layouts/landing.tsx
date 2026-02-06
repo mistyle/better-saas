@@ -1,5 +1,5 @@
-import { Footer } from '@/components/blocks/footer/footer';
-import { NavbarWrapper } from '@/components/blocks/navbar/navbar-wrapper';
+import { Footer } from '../blocks/footer';
+import { NavbarWrapper } from '../blocks/navbar';
 import type { ReactNode } from 'react';
 
 interface LandingLayoutProps {

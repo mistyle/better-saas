@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserAvatarMenu } from '@/components/widget/user-avatar-menu';
+import { UserAvatarMenu } from '@/themes/default/blocks/user-avatar-menu';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 

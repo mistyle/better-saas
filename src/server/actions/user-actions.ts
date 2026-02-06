@@ -1,7 +1,6 @@
 'use server';
 
-import { auth } from '@/lib/auth/auth';
-import { headers } from 'next/headers';
+import { getServerSession } from '@/lib/auth/server-session';
 import db from '@/server/db';
 import { user } from '@/server/db/schema';
 import { count, desc, asc, ilike, and, gte, or, eq, isNotNull } from 'drizzle-orm';
@@ -44,9 +43,7 @@ export interface GetUsersOptions {
  * Get user statistics
  */
 export async function getUserStats(): Promise<UserStats> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getServerSession();
 
   if (!session?.user) {
     throw new Error('Unauthorized');
@@ -98,9 +95,7 @@ export async function getUserStats(): Promise<UserStats> {
  * Get paginated user list
  */
 export async function getUsers(options: GetUsersOptions = {}): Promise<UserListResponse> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getServerSession();
 
   if (!session?.user) {
     throw new Error('Unauthorized');

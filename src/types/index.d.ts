@@ -76,28 +76,6 @@ export interface I18nConfig {
 }
 
 export interface FeaturesConfig {
-  auth: {
-    enabled: boolean;
-    providers: {
-      email: boolean;
-      github: boolean;
-      google: boolean;
-    };
-    session: {
-      maxAge: number;
-    };
-    passwordReset: boolean;
-    emailVerification: boolean;
-  };
-  payment: {
-    enabled: boolean;
-    provider: 'stripe';
-    currency: string;
-    trial: {
-      enabled: boolean;
-      days: number;
-    };
-  };
   fileManager: {
     enabled: boolean;
     storage: 'r2' | 's3';
@@ -105,40 +83,6 @@ export interface FeaturesConfig {
     imageProcessing: boolean;
     maxFileSize: number;
     allowedTypes: string[];
-  };
-  blog: {
-    enabled: boolean;
-    commentsEnabled: boolean;
-    tagsEnabled: boolean;
-    authorsEnabled: boolean;
-    searchEnabled: boolean;
-  };
-  docs: {
-    enabled: boolean;
-    searchEnabled: boolean;
-    editOnGithub: boolean;
-    tableOfContents: boolean;
-    breadcrumbs: boolean;
-  };
-  analytics: {
-    enabled: boolean;
-    provider: 'vercel' | 'google' | 'plausible';
-    trackingId?: string;
-  };
-  notifications: {
-    enabled: boolean;
-    emailNotifications: boolean;
-    pushNotifications: boolean;
-    inAppNotifications: boolean;
-  };
-  dashboard: {
-    enabled: boolean;
-    widgets: {
-      analytics: boolean;
-      recentActivity: boolean;
-      quickActions: boolean;
-      notifications: boolean;
-    };
   };
   admin: {
     enabled: boolean;
@@ -148,75 +92,9 @@ export interface FeaturesConfig {
   };
 }
 
-export interface ThemeConfig {
+export interface AppearanceConfig {
   defaultTheme: 'light' | 'dark' | 'system';
   themes: readonly string[];
-  colors: {
-    primary: Record<string, string>;
-    secondary: Record<string, string>;
-    accent: Record<string, string>;
-    neutral: Record<string, string>;
-    success: Record<string, string>;
-    warning: Record<string, string>;
-    error: Record<string, string>;
-    info: Record<string, string>;
-  };
-  fonts: {
-    sans: string[];
-    mono: string[];
-    serif: string[];
-  };
-  borderRadius: {
-    none: string;
-    sm: string;
-    md: string;
-    lg: string;
-    xl: string;
-    full: string;
-  };
-  spacing: {
-    xs: string;
-    sm: string;
-    md: string;
-    lg: string;
-    xl: string;
-    '2xl': string;
-    '3xl': string;
-  };
-  animations: {
-    duration: {
-      fast: string;
-      normal: string;
-      slow: string;
-    };
-    easing: {
-      ease: string;
-      easeIn: string;
-      easeOut: string;
-      easeInOut: string;
-    };
-  };
-  breakpoints: {
-    sm: string;
-    md: string;
-    lg: string;
-    xl: string;
-    '2xl': string;
-  };
-  shadows: {
-    sm: string;
-    md: string;
-    lg: string;
-    xl: string;
-    '2xl': string;
-  };
-  zIndex: {
-    dropdown: number;
-    modal: number;
-    popover: number;
-    tooltip: number;
-    toast: number;
-  };
 }
 
 export interface PaymentPlan {

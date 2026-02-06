@@ -1,4 +1,4 @@
-import { getThemePage } from '@/core/theme';
+import { getThemePage } from '@/themes/loader';
 
 export default async function HomePage() {
   const { HomePage: ThemedHomePage } = await getThemePage('home');

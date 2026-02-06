@@ -1,4 +1,4 @@
-import { getThemeLayout } from '@/core/theme';
+import { getThemeLayout } from '@/themes/loader';
 import type { ReactNode } from 'react';
 
 type Props = {

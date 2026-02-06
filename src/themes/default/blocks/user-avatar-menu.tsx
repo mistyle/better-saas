@@ -10,7 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuthLoading, useIsAuthenticated, useUser, useSignOut } from '@/store/auth-store';
+import { useAuthLoading, useIsAuthenticated, useUser } from '@/lib/auth/use-auth';
+import { authClient } from '@/lib/auth/auth-client';
 import { CreditCard, Home, LogOut, Settings, Shield, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -20,11 +21,11 @@ export function UserAvatarMenu() {
   const user = useUser();
   const isAuthenticated = useIsAuthenticated();
   const isLoading = useAuthLoading();
-  const signOut = useSignOut();
   const t = useTranslations('userMenu');
 
   const handleLogout = async () => {
-    await signOut();
+    await authClient.signOut();
+    router.push('/');
   };
 
   if (isLoading) {

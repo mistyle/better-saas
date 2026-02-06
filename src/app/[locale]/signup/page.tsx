@@ -1,4 +1,4 @@
-import { getThemeBlock } from '@/core/theme';
+import { getThemeBlock } from '@/themes/loader';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 
