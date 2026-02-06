@@ -22,6 +22,20 @@
       "when": 1755487929062,
       "tag": "0002_strong_shinko_yamashiro",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770372193512,
+      "tag": "0003_calm_punisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770383727603,
+      "tag": "0004_far_titania",
+      "breakpoints": true
     }
   ]
 }

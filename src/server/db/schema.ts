@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, text, timestamp, unique } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -196,6 +196,64 @@ export const userQuotaUsage = pgTable(
       columns: [table.userId, table.service, table.period],
       unique: true,
     },
+  })
+);
+
+// Blog category table
+export const blogCategory = pgTable(
+  'blog_category',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    slug: text('slug').notNull(),
+    description: text('description'),
+    locale: text('locale').notNull().default('zh'),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at')
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    updatedAt: timestamp('updated_at')
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => ({
+    slugLocaleUnique: unique('blog_category_slug_locale_unique').on(table.slug, table.locale),
+  })
+);
+
+// Blog post table
+export const blogPost = pgTable(
+  'blog_post',
+  {
+    id: text('id').primaryKey(),
+    slug: text('slug').notNull(),
+    locale: text('locale').notNull().default('zh'),
+    title: text('title').notNull(),
+    description: text('description'),
+    content: text('content'), // Tiptap JSON
+    htmlContent: text('html_content'), // Pre-rendered HTML
+    coverImage: text('cover_image'),
+    author: text('author'),
+    tags: text('tags'), // JSON array string
+    categoryId: text('category_id').references(() => blogCategory.id, { onDelete: 'set null' }),
+    status: text('status', {
+      enum: ['draft', 'published', 'archived'],
+    })
+      .notNull()
+      .default('draft'),
+    publishedAt: timestamp('published_at'),
+    authorId: text('author_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at')
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    updatedAt: timestamp('updated_at')
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => ({
+    slugLocaleUnique: unique('blog_post_slug_locale_unique').on(table.slug, table.locale),
   })
 );
 

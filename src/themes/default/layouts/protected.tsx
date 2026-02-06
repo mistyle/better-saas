@@ -1,6 +1,6 @@
 'use client';
 
-import { Coins, CreditCard, Files, History, Key, Shield, Users } from 'lucide-react';
+import { Coins, CreditCard, Files, FolderOpen, History, Key, PenTool, Shield, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
@@ -34,6 +34,16 @@ export function ProtectedLayoutClient({ children }: ProtectedLayoutClientProps) 
             title: t('files'),
             href: '/dashboard/files',
             icon: Files,
+          },
+          {
+            title: t('blog'),
+            href: '/dashboard/blog',
+            icon: PenTool,
+          },
+          {
+            title: t('blogCategories'),
+            href: '/dashboard/blog/categories',
+            icon: FolderOpen,
           },
         ],
       });

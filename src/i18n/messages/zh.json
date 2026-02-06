@@ -206,7 +206,9 @@
     "credits": "积分",
     "balance": "余款",
     "history": "历史",
-    "apiKeys": "API密钥"
+    "apiKeys": "API密钥",
+    "blog": "博客管理",
+    "blogCategories": "分类管理"
   },
   "navbar": {
     "logo": {
@@ -346,7 +348,8 @@
     "backToBlog": "返回博客",
     "author": "作者",
     "publishedOn": "发布于",
-    "tags": "标签"
+    "tags": "标签",
+    "allCategories": "全部"
   },
   "legal": {
     "terms": {

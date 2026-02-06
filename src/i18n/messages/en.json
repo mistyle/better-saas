@@ -206,7 +206,9 @@
     "credits": "Credits",
     "balance": "Balance",
     "history": "History",
-    "apiKeys": "API Keys"
+    "apiKeys": "API Keys",
+    "blog": "Blog",
+    "blogCategories": "Categories"
   },
   "navbar": {
     "logo": {
@@ -310,7 +312,7 @@
     "past_due": "Past Due",
     "canceled": "Canceled",
     "incomplete": "Incomplete",
-    "syncing": "同步中...",
+    "syncing": "Syncing...",
     "sync_subscription_info": "Sync subscription info",
     "subscription": "Subscription",
     "one_time_payment": "One Time Payment",
@@ -346,7 +348,8 @@
     "backToBlog": "Back to Blog",
     "author": "Author",
     "publishedOn": "Published on",
-    "tags": "Tags"
+    "tags": "Tags",
+    "allCategories": "All"
   },
   "legal": {
     "terms": {
