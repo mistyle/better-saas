@@ -46,7 +46,6 @@ export type BlockName =
   | 'navbar'
   | 'pricing'
   | 'purchase-confirmation-dialog'
-  | 'quota-overview'
   | 'signup'
   | 'subscription-card'
   | 'tech-stack'

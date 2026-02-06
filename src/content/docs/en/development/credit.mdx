@@ -2,14 +2,13 @@
 title: Credit System Guide
 description: Complete guide for implementing and managing the credit system in Better SaaS
 ---
-The credit system in Better SaaS provides a flexible way to manage user quotas and track resource consumption. This guide covers the implementation details and usage patterns.
+The credit system in Better SaaS provides a flexible way to manage credits and track resource consumption. This guide covers the implementation details and usage patterns.
 
 ## Architecture Overview
 
 The credit system consists of several key components:
 
 - **Credit Management**: Core logic for credit operations
-- **Quota Service**: Resource consumption tracking
 - **Database Schema**: Credit storage and history
 - **API Endpoints**: Credit management interfaces
 - **Cron Jobs**: Automated credit renewal
@@ -135,52 +134,6 @@ export class CreditService {
 }
 ```
 
-### Quota Service
-
-The quota service manages resource consumption:
-
-```typescript
-// src/lib/quota/quota-service.ts
-import { CreditService } from '@/lib/credits/credit-service'
-import { CREDIT_COSTS } from '@/config/credits.config'
-
-export class QuotaService {
-  static async checkQuota(userId: string, resource: string, amount = 1) {
-    const cost = CREDIT_COSTS[resource] * amount
-    const userCredits = await CreditService.getUserCredits(userId)
-    
-    if (!userCredits || userCredits.credits < cost) {
-      return { allowed: false, cost, available: userCredits?.credits || 0 }
-    }
-    
-    return { allowed: true, cost, available: userCredits.credits }
-  }
-
-  static async consumeQuota(
-    userId: string,
-    resource: string,
-    amount = 1,
-    metadata?: Record<string, any>
-  ) {
-    const cost = CREDIT_COSTS[resource] * amount
-    
-    await CreditService.spendCredits(
-      userId,
-      cost,
-      `Used ${amount} ${resource}`,
-      { resource, amount, ...metadata }
-    )
-    
-    return { cost, remaining: await this.getRemainingCredits(userId) }
-  }
-
-  static async getRemainingCredits(userId: string) {
-    const userCredits = await CreditService.getUserCredits(userId)
-    return userCredits?.credits || 0
-  }
-}
-```
-
 ## Configuration
 
 Credit costs are configured in the credits config file:
@@ -248,29 +201,6 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-## Middleware Integration
-
-Integrate credit checking into your API middleware:
-
-```typescript
-// src/middleware/credit-check.ts
-import { QuotaService } from '@/lib/quota/quota-service'
-
-export async function creditCheckMiddleware(
-  userId: string,
-  resource: string,
-  amount = 1
-) {
-  const quota = await QuotaService.checkQuota(userId, resource, amount)
-  
-  if (!quota.allowed) {
-    throw new Error(`Insufficient credits. Required: ${quota.cost}, Available: ${quota.available}`)
-  }
-  
-  return quota
-}
-```
-
 ## Cron Jobs
 
 Automatic monthly credit renewal:
@@ -304,11 +234,13 @@ export async function renewMonthlyCredits() {
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers })
   
-  // Check quota before processing
-  const quota = await QuotaService.checkQuota(session.user.id, 'ai_chat_message')
-  if (!quota.allowed) {
+  // Check credits before processing
+  const cost = CREDIT_COSTS['ai_chat_message']
+  const userCredits = await CreditService.getUserCredits(session.user.id)
+  
+  if (!userCredits || userCredits.credits < cost) {
     return NextResponse.json(
-      { error: 'Insufficient credits', required: quota.cost },
+      { error: 'Insufficient credits', required: cost },
       { status: 402 }
     )
   }
@@ -317,7 +249,11 @@ export async function POST(request: NextRequest) {
   const result = await processAIChat(request)
   
   // Consume credits after successful processing
-  await QuotaService.consumeQuota(session.user.id, 'ai_chat_message')
+  await CreditService.spendCredits(
+    session.user.id,
+    cost,
+    'Used ai_chat_message'
+  )
   
   return NextResponse.json(result)
 }
@@ -387,4 +323,4 @@ describe('CreditService', () => {
 })
 ```
 
-This credit system provides a robust foundation for managing user quotas and resource consumption in your SaaS application.
+This credit system provides a robust foundation for managing credits and resource consumption in your SaaS application.

@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useRouter } from '@/i18n/navigation';
 import { CreditBalance } from '../blocks/credit-balance';
 import { CreditHistory } from '../blocks/credit-history';
-import { QuotaOverview } from '../blocks/quota-overview';
 
 export function CreditsPage() {
   const router = useRouter();
@@ -46,9 +45,6 @@ export function CreditsPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Quota Overview */}
-      <QuotaOverview />
 
       {/* Recent Credit History */}
       <Card>

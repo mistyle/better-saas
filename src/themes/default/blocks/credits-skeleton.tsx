@@ -45,29 +45,6 @@ export function CreditsPageSkeleton() {
         </CardContent>
       </Card>
 
-      {/* Quota Overview */}
-      <Card>
-        <CardHeader>
-          <Skeleton className="mb-2 h-6 w-32" />
-          <Skeleton className="h-4 w-56" />
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div key={`quota-${i}`} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-20" />
-              </div>
-              <Skeleton className="h-2 w-full" />
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-3 w-20" />
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
       {/* Recent Activity */}
       <Card>
         <CardHeader>

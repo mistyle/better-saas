@@ -329,7 +329,8 @@ export async function DELETE(
 // src/app/api/external/chat/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { apiAuthMiddleware } from '@/middleware/api-auth'
-import { QuotaService } from '@/lib/quota/quota-service'
+import { CreditService } from '@/lib/credits/credit-service'
+import { CREDIT_COSTS } from '@/config/credits.config'
 
 export async function POST(request: NextRequest) {
   // 验证 API Key
@@ -346,15 +347,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // 检查配额
-    const quota = await QuotaService.checkQuota(
-      request.apiKey.userId,
-      'ai_chat_message'
-    )
+    // 检查积分
+    const cost = CREDIT_COSTS['ai_chat_message']
+    const userCredits = await CreditService.getUserCredits(request.apiKey.userId)
     
-    if (!quota.allowed) {
+    if (!userCredits || userCredits.credits < cost) {
       return NextResponse.json(
-        { error: '配额不足', required: quota.cost },
+        { error: '积分不足', required: cost },
         { status: 402 }
       )
     }
@@ -362,10 +361,11 @@ export async function POST(request: NextRequest) {
     // 处理聊天请求
     const response = await processChatMessage(message)
     
-    // 消耗配额
-    await QuotaService.consumeQuota(
+    // 消耗积分
+    await CreditService.spendCredits(
       request.apiKey.userId,
-      'ai_chat_message'
+      cost,
+      '使用了 ai_chat_message'
     )
 
     // 记录 API 使用情况

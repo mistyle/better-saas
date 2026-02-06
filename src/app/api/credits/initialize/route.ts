@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { paymentConfig } from '@/config/payment.config';
 import { auth } from '@/lib/auth/auth';
 import { creditService } from '@/lib/credits';
-import { quotaService } from '@/lib/quota/quota-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -88,15 +87,6 @@ export async function POST(request: NextRequest) {
       }
     } else if (alreadyReceivedBonus) {
       console.log(`⚠️ Signup bonus already granted to ${session.user.email}, skipping`);
-    }
-
-    // Initialize quota usage tracking
-    try {
-      await quotaService.initializeForUser(userId);
-      console.log(`✅ Initialized quota tracking for ${session.user.email}`);
-    } catch (quotaErr) {
-      console.error(`Failed to initialize quota for ${session.user.email}:`, quotaErr);
-      // Don't throw - quota initialization failure shouldn't block the response
     }
 
     console.log(`🎉 Successfully initialized credit account for user ${session.user.email}`);

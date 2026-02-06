@@ -170,35 +170,6 @@ export const creditTransactions = pgTable(
   })
 );
 
-export const userQuotaUsage = pgTable(
-  'user_quota_usage',
-  {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => user.id, { onDelete: 'cascade' }),
-    service: text('service', {
-      enum: ['api_call', 'storage', 'custom'],
-    }).notNull(),
-    period: text('period').notNull(), // Format: YYYY-MM
-    usedAmount: integer('used_amount').notNull().default(0),
-    createdAt: timestamp('created_at')
-      .$defaultFn(() => /* @__PURE__ */ new Date())
-      .notNull(),
-    updatedAt: timestamp('updated_at')
-      .$defaultFn(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => ({
-    // Composite unique index for user, service, and period
-    userServicePeriodIdx: {
-      name: 'user_service_period_idx',
-      columns: [table.userId, table.service, table.period],
-      unique: true,
-    },
-  })
-);
-
 // Blog category table
 export const blogCategory = pgTable(
   'blog_category',

@@ -6,7 +6,6 @@ title: 积分系统开发指南
 积分系统由几个关键组件组成：
 
 - **积分管理**：积分操作的核心逻辑
-- **配额服务**：资源消耗跟踪
 - **数据库架构**：积分存储和历史记录
 - **API 端点**：积分管理接口
 - **定时任务**：自动积分续期
@@ -132,52 +131,6 @@ export class CreditService {
 }
 ```
 
-### 配额服务
-
-配额服务管理资源消耗：
-
-```typescript
-// src/lib/quota/quota-service.ts
-import { CreditService } from '@/lib/credits/credit-service'
-import { CREDIT_COSTS } from '@/config/credits.config'
-
-export class QuotaService {
-  static async checkQuota(userId: string, resource: string, amount = 1) {
-    const cost = CREDIT_COSTS[resource] * amount
-    const userCredits = await CreditService.getUserCredits(userId)
-    
-    if (!userCredits || userCredits.credits < cost) {
-      return { allowed: false, cost, available: userCredits?.credits || 0 }
-    }
-    
-    return { allowed: true, cost, available: userCredits.credits }
-  }
-
-  static async consumeQuota(
-    userId: string,
-    resource: string,
-    amount = 1,
-    metadata?: Record<string, any>
-  ) {
-    const cost = CREDIT_COSTS[resource] * amount
-    
-    await CreditService.spendCredits(
-      userId,
-      cost,
-      `使用了 ${amount} 个 ${resource}`,
-      { resource, amount, ...metadata }
-    )
-    
-    return { cost, remaining: await this.getRemainingCredits(userId) }
-  }
-
-  static async getRemainingCredits(userId: string) {
-    const userCredits = await CreditService.getUserCredits(userId)
-    return userCredits?.credits || 0
-  }
-}
-```
-
 ## 配置
 
 积分成本在积分配置文件中配置：
@@ -245,29 +198,6 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-## 中间件集成
-
-将积分检查集成到您的 API 中间件中：
-
-```typescript
-// src/middleware/credit-check.ts
-import { QuotaService } from '@/lib/quota/quota-service'
-
-export async function creditCheckMiddleware(
-  userId: string,
-  resource: string,
-  amount = 1
-) {
-  const quota = await QuotaService.checkQuota(userId, resource, amount)
-  
-  if (!quota.allowed) {
-    throw new Error(`积分不足。需要：${quota.cost}，可用：${quota.available}`)
-  }
-  
-  return quota
-}
-```
-
 ## 定时任务
 
 自动月度积分续期：
@@ -301,11 +231,13 @@ export async function renewMonthlyCredits() {
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers })
   
-  // 处理前检查配额
-  const quota = await QuotaService.checkQuota(session.user.id, 'ai_chat_message')
-  if (!quota.allowed) {
+  // 处理前检查积分
+  const cost = CREDIT_COSTS['ai_chat_message']
+  const userCredits = await CreditService.getUserCredits(session.user.id)
+  
+  if (!userCredits || userCredits.credits < cost) {
     return NextResponse.json(
-      { error: '积分不足', required: quota.cost },
+      { error: '积分不足', required: cost },
       { status: 402 }
     )
   }
@@ -314,7 +246,11 @@ export async function POST(request: NextRequest) {
   const result = await processAIChat(request)
   
   // 成功处理后消耗积分
-  await QuotaService.consumeQuota(session.user.id, 'ai_chat_message')
+  await CreditService.spendCredits(
+    session.user.id,
+    cost,
+    '使用了 ai_chat_message'
+  )
   
   return NextResponse.json(result)
 }
@@ -384,4 +320,4 @@ describe('CreditService', () => {
 })
 ```
 
-这个积分系统为您的 SaaS 应用程序中管理用户配额和资源消耗提供了强大的基础。
+这个积分系统为您的 SaaS 应用程序中管理积分和资源消耗提供了强大的基础。
