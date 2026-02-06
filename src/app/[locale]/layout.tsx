@@ -1,6 +1,5 @@
 import '@/styles/globals.css';
 
-import { AuthProvider } from '@/components/providers/auth-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { routing } from '@/i18n/routing';
@@ -27,12 +26,10 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          {children}
-          <Toaster />
-        </NextIntlClientProvider>
-      </AuthProvider>
+      <NextIntlClientProvider messages={messages} locale={locale}>
+        {children}
+        <Toaster />
+      </NextIntlClientProvider>
     </ThemeProvider>
   );
 }

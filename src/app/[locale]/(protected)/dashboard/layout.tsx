@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { AuthGuard } from '@/components/auth-guard';
+import { RouteGuard } from '@/components/route-guard';
 import { ProtectedLayoutClient } from '@/themes/default/layouts/protected';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 import PermissionWrapper from '@/components/auth/permission-wrapper';
@@ -23,11 +23,11 @@ type Props = {
 export default function DashboardLayout({ children }: Props) {
   return (
     <Suspense fallback={<LoadingSkeleton />}>
-      <AuthGuard useSkeletonFallback>
+      <RouteGuard useSkeletonFallback>
         <PermissionWrapper>
           <ProtectedLayoutClient>{children}</ProtectedLayoutClient>
         </PermissionWrapper>
-      </AuthGuard>
+      </RouteGuard>
     </Suspense>
   );
 } 

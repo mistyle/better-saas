@@ -1,6 +1,6 @@
 'use client';
 
-import { AdminGuard } from '@/components/admin-guard';
+import { AdminGuard } from '@/components/route-guard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserList } from '@/themes/default/blocks/user-list';
 import { getUserStats, type UserStats } from '@/server/actions/user-actions';

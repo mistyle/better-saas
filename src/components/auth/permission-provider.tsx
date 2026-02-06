@@ -28,21 +28,3 @@ export function useIsAdmin(): boolean {
   }
   return context.isAdmin
 }
-
-// For backward compatibility, but should be removed eventually
-export function useUserRole() {
-  const isAdmin = useIsAdmin()
-  return isAdmin ? 'admin' : 'user'
-}
-
-export function useHasPermission() {
-  const isAdmin = useIsAdmin()
-  return (permission: string) => {
-    // Admin has all permissions, regular users have basic permissions
-    if (isAdmin) return true
-    
-    // Basic permissions for all users
-    const basicPermissions = ['settings.view', 'profile.edit', 'billing.view']
-    return basicPermissions.includes(permission)
-  }
-}
