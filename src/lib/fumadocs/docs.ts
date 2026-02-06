@@ -1,4 +1,4 @@
-import { docs } from '@/.source';
+import { docs } from '@/.source/server';
 import { loader } from 'fumadocs-core/source';
 import type { InferMetaType, InferPageType } from 'fumadocs-core/source';
 
@@ -43,7 +43,7 @@ function getMetaConfigFromSource(locale: string, folderPath = ''): MetaConfig | 
     const metaPath = folderPath ? `${locale}/${folderPath}/meta.json` : `${locale}/meta.json`;
     
     // Find the meta file in the source data
-    const metaFiles = Array.isArray(sourceData.files) ? sourceData.files : sourceData.files();
+    const metaFiles = sourceData.files;
     const metaFile = metaFiles.find(file => 
       file.path === metaPath && file.type === 'meta'
     );
@@ -65,7 +65,7 @@ export function getDocsPages(locale = 'en'): DocsPage[] {
   const filteredPages = allPages.filter((page) => {
     const urlParts = page.url.split('/');
     const pageLocale = urlParts[2];
-    return pageLocale === locale && page.file.name !== 'meta';
+    return pageLocale === locale && !page.path.endsWith('/meta');
   });
 
   // Get meta configuration for ordering
@@ -76,7 +76,9 @@ export function getDocsPages(locale = 'en'): DocsPage[] {
     const pageMap = new Map<string, DocsPage>();
     for (const page of filteredPages) {
       // For index pages, the slug array is ['en'] or ['zh'], we need to map this to 'index'
-      if (page.slugs.length === 1 && page.file.name === 'index') {
+      const pathSegments = page.path.split('/');
+      const fileName = pathSegments[pathSegments.length - 1];
+      if (page.slugs.length === 1 && fileName === 'index') {
         pageMap.set('index', page);
       } else {
         const pageSlug = page.slugs[page.slugs.length - 1];
@@ -134,7 +136,7 @@ export function buildDocsTree(locale = 'en'): DocsTreeItem[] {
   const filteredPages = allPages.filter((page) => {
     const urlParts = page.url.split('/');
     const pageLocale = urlParts[2];
-    return pageLocale === locale && page.file.name !== 'meta';
+    return pageLocale === locale && !page.path.endsWith('/meta');
   });
 
   // Get root meta configuration
@@ -181,7 +183,8 @@ export function buildDocsTree(locale = 'en'): DocsTreeItem[] {
         // This is a regular page
         const page = filteredPages.find(p => {
           if (pageSlug === 'index') {
-            return p.slugs.length === 1 && p.file.name === 'index';
+            const segments = p.path.split('/');
+            return p.slugs.length === 1 && segments[segments.length - 1] === 'index';
           }
           return p.slugs.length === 2 && p.slugs[1] === pageSlug;
         });

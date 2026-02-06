@@ -1,0 +1,109 @@
+=== Bundle Size Analysis Report ===
+Generated on: 2025/7/21 21:43:06
+
+📊 Summary:
+- Total Chunks: 82
+- Total CSS Files: 2
+- Largest Chunk: framework-c9a9b3143f311a85.js (178.5 KB)
+- Vendor Chunks Total: 0 B
+- UI Chunks Total: 0 B
+- Total .next Directory: 962M
+
+📦 Other Chunks:
+  178.5 KB - framework-c9a9b3143f311a85.js
+  170.7 KB - 7138-6ca10c6fbb5b6554.js
+  164.5 KB - e9e0ca8b-bd11edd6917482ec.js
+  116.7 KB - main-da8874c1251756f2.js
+  110.0 KB - polyfills-42372ed130431b0a.js
+   89.1 KB - 6764-7d7c1ead7a7aa057.js
+   73.6 KB - 801-e528b26e45f08cde.js
+   59.7 KB - 2470.a41abad7bd9b123c.js
+   47.1 KB - 4785-bffe4f8f25f7db82.js
+   33.7 KB - 2658-fde34e3d2098531b.js
+   33.0 KB - 8866-729b090014e3fb8c.js
+   26.9 KB - 2714-0f0c1e3d82244f8d.js
+   25.7 KB - 430-8f783d5d2625d41d.js
+   25.4 KB - 3215-d803af98b452b4b5.js
+   23.4 KB - 9260-b3392a1aa79ff7f6.js
+   23.2 KB - 4154-5a91f120c739794e.js
+   20.1 KB - 347-1d4be2544aedaa90.js
+   19.7 KB - 5972-eeb88e5b99792f9d.js
+   18.4 KB - 9305-37726338a834472e.js
+   17.1 KB - 6771.70866f74e62c84de.js
+   15.2 KB - 9733-a5d173e4f08a0823.js
+   14.1 KB - 9020-05d9dd0030e6c8ab.js
+   11.5 KB - 4442-16182472367fee3d.js
+   10.8 KB - 5003-bb82cfb71257fffe.js
+   10.8 KB - 530-22cd3d8c7ecd5890.js
+   10.5 KB - 7269-7503f7b6fafb2732.js
+   10.3 KB - 5017-a305e2ddf4e0b992.js
+    8.8 KB - 4756-01e8e79d777779d6.js
+    8.7 KB - 337-8bf1ac37d564fdcb.js
+    8.4 KB - 3798-b55a803b0a2048c2.js
+    8.3 KB - 5684-e9de2f5b61b81bb7.js
+    7.7 KB - 2861-4e10cb9735679def.js
+    5.4 KB - 8881-685936f1c5909c14.js
+    3.5 KB - webpack-58d65f2ccae44975.js
+    1.2 KB - 9326.010cad59604a0353.js
+   683.0 B - 9281.f751921b70435095.js
+   521.0 B - main-app-2e5452b4becdc5ca.js
+   446.0 B - 6769.1bc9a3eac016c9cd.js
+    6.6 MB - [SERVER] 1351.js
+  910.4 KB - [SERVER] 6439.js
+  504.6 KB - [SERVER] 3541.js
+  279.2 KB - [SERVER] 3812.js
+  275.3 KB - [SERVER] 5455.js
+  177.2 KB - [SERVER] 5811.js
+  122.4 KB - [SERVER] 7877.js
+  119.6 KB - [SERVER] 4041.js
+   91.5 KB - [SERVER] 7620.js
+   85.8 KB - [SERVER] 2864.js
+   59.7 KB - [SERVER] 2699.js
+   58.1 KB - [SERVER] 389.js
+   54.3 KB - [SERVER] 7765.js
+   36.3 KB - [SERVER] 8414.js
+   35.1 KB - [SERVER] 19.js
+   31.3 KB - [SERVER] 4465.js
+   27.4 KB - [SERVER] 5828.js
+   26.9 KB - [SERVER] 3850.js
+   22.8 KB - [SERVER] 4485.js
+   20.3 KB - [SERVER] 9813.js
+   18.9 KB - [SERVER] 9553.js
+   18.6 KB - [SERVER] 180.js
+   18.5 KB - [SERVER] 6385.js
+   18.3 KB - [SERVER] 7033.js
+   18.1 KB - [SERVER] 3807.js
+   13.9 KB - [SERVER] 2860.js
+   12.8 KB - [SERVER] 2999.js
+   12.4 KB - [SERVER] 8949.js
+   12.2 KB - [SERVER] 1960.js
+   12.2 KB - [SERVER] 9321.js
+   11.7 KB - [SERVER] 4483.js
+   11.1 KB - [SERVER] 1702.js
+   11.1 KB - [SERVER] 7601.js
+    9.8 KB - [SERVER] 1761.js
+    9.8 KB - [SERVER] 7176.js
+    8.9 KB - [SERVER] 9021.js
+    7.7 KB - [SERVER] 3754.js
+    7.5 KB - [SERVER] 3141.js
+    3.1 KB - [SERVER] 9020.js
+    2.6 KB - [SERVER] 2559.js
+    2.6 KB - [SERVER] 3378.js
+    1.2 KB - [SERVER] 3878.js
+   670.0 B - [SERVER] 8321.js
+   433.0 B - [SERVER] 5517.js
+
+🎨 CSS Files:
+  128.3 KB - 2ef02b165576cb7a.css
+    2.6 KB - ed9429abed6dc7b0.css
+
+💡 Optimization Suggestions:
+
+⚠️  Large CSS Files Found:
+  - 2ef02b165576cb7a.css (128.3 KB) - Consider CSS optimization
+
+✅ General Recommendations:
+  - Use dynamic imports for large components
+  - Implement code splitting for route-based chunks
+  - Consider tree shaking for unused exports
+  - Optimize images and static assets

@@ -1,8 +1,9 @@
-import { SignupForm } from '@/components/blocks/signup/signup-form';
+import { getThemeBlock } from '@/core/theme';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const { SignupForm } = await getThemeBlock('signup');
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">

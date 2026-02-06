@@ -1,4 +1,4 @@
-import { blog } from '@/.source';
+import { blog } from '@/.source/server';
 import { loader } from 'fumadocs-core/source';
 import type { InferMetaType, InferPageType } from 'fumadocs-core/source';
 

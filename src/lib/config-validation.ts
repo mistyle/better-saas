@@ -231,7 +231,7 @@ export function validateConfig<T>(config: T, schema: z.ZodSchema<T>, configName:
     return schema.parse(config);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorMessages = error.errors.map(err => 
+      const errorMessages = error.issues.map(err => 
         `${err.path.join('.')}: ${err.message}`
       ).join('\n');
       

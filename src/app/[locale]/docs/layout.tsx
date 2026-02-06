@@ -1,7 +1,7 @@
 import { locales } from '@/i18n/routing';
 import { buildDocsTree } from '@/lib/fumadocs/docs';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import { RootProvider } from 'fumadocs-ui/provider';
+import { RootProvider } from 'fumadocs-ui/provider/next';
 import { getMessages } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { i18nConfig } from '@/config/i18n.config';
