@@ -1,7 +1,7 @@
 'use server';
 
-import { getServerSession } from '@/lib/auth/server-session';
 import { isAdmin } from '@/lib/auth/permissions';
+import { getServerSession } from '@/lib/auth/server-session';
 
 /**
  * Get user admin status on server side

@@ -1,8 +1,7 @@
-import type * as React from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from 'lucide-react';
-
-import { cn } from '@/lib/utils';
+import type * as React from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
   return (
@@ -158,7 +157,7 @@ function PaginationControls({
                 variant={currentPage === page ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => onPageChange(page as number)}
-                className="w-9 h-9"
+                className="h-9 w-9"
               >
                 {page}
               </Button>

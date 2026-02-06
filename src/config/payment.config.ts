@@ -3,10 +3,10 @@ import type { PaymentConfig } from '@/types';
 export const paymentConfig: PaymentConfig = {
   // Payment provider
   provider: 'stripe',
-  
+
   // Base currency
   currency: 'usd',
-  
+
   // Stripe configuration
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY || '',
@@ -23,8 +23,8 @@ export const paymentConfig: PaymentConfig = {
       price: 0,
       interval: null,
       credits: {
-        monthly: 50,    // 每月免费积分
-        onSignup: 50,   // 注册赠送积分
+        monthly: 50, // 每月免费积分
+        onSignup: 50, // 注册赠送积分
       },
       features: [
         '50 credits per month',
@@ -53,8 +53,8 @@ export const paymentConfig: PaymentConfig = {
         yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_YEARLY || 'price_pro_yearly',
       },
       credits: {
-        monthly: 1000,     // 每月积分
-        yearly: 12000,     // 年付积分（多送2个月）
+        monthly: 1000, // 每月积分
+        yearly: 12000, // 年付积分（多送2个月）
         onSubscribe: 1000, // 订阅时立即获得
       },
       features: [
@@ -82,12 +82,13 @@ export const paymentConfig: PaymentConfig = {
       yearlyPrice: 1999, // Updated pricing to match design document
       interval: 'month',
       stripePriceIds: {
-        monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE_MONTHLY || 'price_enterprise_monthly',
+        monthly:
+          process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE_MONTHLY || 'price_enterprise_monthly',
         yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE_YEARLY || 'price_enterprise_yearly',
       },
       credits: {
-        monthly: 5000,     // 每月积分
-        yearly: 60000,     // 年付积分
+        monthly: 5000, // 每月积分
+        yearly: 60000, // 年付积分
         onSubscribe: 5000, // 订阅时立即获得
       },
       features: [
@@ -119,7 +120,8 @@ export const paymentConfig: PaymentConfig = {
 
   // Invoice configuration
   invoice: {
-    footer: 'Thank you for your business! If you have any questions, please contact our support team.',
+    footer:
+      'Thank you for your business! If you have any questions, please contact our support team.',
     logo: '/logo.png',
     supportEmail: 'support@better-saas.com',
   },
@@ -139,4 +141,4 @@ export const paymentConfig: PaymentConfig = {
     customerPortal: true,
     webhooks: true,
   },
-}; 
+};

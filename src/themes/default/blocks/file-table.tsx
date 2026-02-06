@@ -1,5 +1,9 @@
 'use client';
 
+import { Download, Eye, MoreHorizontal, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { useLocale, useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,11 +23,6 @@ import {
 } from '@/components/ui/table';
 import type { FileInfo } from '@/lib/files/file-service';
 import { cn } from '@/lib/utils';
-import { Download, Eye, MoreHorizontal, Trash2 } from 'lucide-react';
-import Image from 'next/image';
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
 
 interface FileTableProps {
   files: FileInfo[];
@@ -91,7 +90,7 @@ export function FileTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Array.from({ length: 6 }, (_, index) => (
+            {Array.from({ length: 6 }, (_, _index) => (
               <TableRow key={`skeleton-${Math.random().toString(36).slice(2, 10)}`}>
                 <TableCell>
                   <Skeleton className="h-12 w-16 rounded" />
@@ -180,10 +179,14 @@ export function FileTable({
                 <span className="text-muted-foreground text-sm">{formatFileSize(file.size)}</span>
               </TableCell>
               <TableCell>
-                <span className="text-muted-foreground text-sm">{file.uploadUserEmail || file.uploadUserId}</span>
+                <span className="text-muted-foreground text-sm">
+                  {file.uploadUserEmail || file.uploadUserId}
+                </span>
               </TableCell>
               <TableCell>
-                <span className="text-muted-foreground text-sm">{formatDate(file.createdAt, locale)}</span>
+                <span className="text-muted-foreground text-sm">
+                  {formatDate(file.createdAt, locale)}
+                </span>
               </TableCell>
               <TableCell>
                 <DropdownMenu>

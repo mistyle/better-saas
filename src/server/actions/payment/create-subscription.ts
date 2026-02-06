@@ -1,13 +1,10 @@
 'use server';
 
+import { env } from '@/env';
 import { getServerSession } from '@/lib/auth/server-session';
 import { StripeProvider } from '@/payment/stripe/provider';
-import { paymentRepository } from '@/server/db/repositories/payment-repository';
 import type { ActionResult } from '@/payment/types';
-import { env } from '@/env';
-import { ErrorLogger } from '@/lib/logger/logger-utils';
-
-const paymentErrorLogger = new ErrorLogger('payment-subscription');
+import { paymentRepository } from '@/server/db/repositories/payment-repository';
 
 export interface CreateSubscriptionParams {
   priceId: string;
@@ -20,7 +17,7 @@ export async function createSubscription(
   params: CreateSubscriptionParams
 ): Promise<ActionResult<{ url?: string; subscriptionId?: string }>> {
   let session: { user?: { id: string; email: string; name?: string } } | null = null;
-  
+
   try {
     session = await getServerSession();
     if (!session?.user) {
@@ -118,12 +115,7 @@ export async function createSubscription(
       message: '订阅创建成功',
     };
   } catch (error) {
-    paymentErrorLogger.logError(error as Error, {
-      operation: 'createSubscription',
-      userId: session?.user?.id,
-      priceId: params.priceId,
-      trialDays: params.trialDays,
-    });
+    console.error('[payment-subscription] createSubscription error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '创建订阅失败',
@@ -135,7 +127,7 @@ export async function createCheckoutSession(
   params: CreateSubscriptionParams
 ): Promise<ActionResult<{ url?: string; subscriptionId?: string; clientSecret?: string }>> {
   let session: { user?: { id: string; email: string; name?: string } } | null = null;
-  
+
   try {
     session = await getServerSession();
     if (!session?.user) {
@@ -180,10 +172,8 @@ export async function createCheckoutSession(
         userId: session.user.id,
         priceId,
         customerId,
-        successUrl:
-          successUrl || `${env.NEXT_PUBLIC_APP_URL}/settings/billing?success=true`,
-        cancelUrl:
-          cancelUrl || `${env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=true`,
+        successUrl: successUrl || `${env.NEXT_PUBLIC_APP_URL}/settings/billing?success=true`,
+        cancelUrl: cancelUrl || `${env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=true`,
         metadata: {
           userId: session.user.id,
           userEmail: session.user.email,
@@ -205,16 +195,14 @@ export async function createCheckoutSession(
         message: '正在跳转到支付页面...',
       };
     }
-    
+
     // 一次性价格 - 创建支付会话
     const checkoutSession = await stripeProvider.createPayment({
       userId: session.user.id,
       priceId,
       customerId,
-      successUrl:
-        successUrl || `${env.NEXT_PUBLIC_APP_URL}/settings/billing?success=true`,
-      cancelUrl:
-        cancelUrl || `${env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=true`,
+      successUrl: successUrl || `${env.NEXT_PUBLIC_APP_URL}/settings/billing?success=true`,
+      cancelUrl: cancelUrl || `${env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=true`,
       metadata: {
         userId: session.user.id,
         userEmail: session.user.email,
@@ -235,13 +223,8 @@ export async function createCheckoutSession(
       },
       message: '正在跳转到支付页面...',
     };
-
   } catch (error) {
-    paymentErrorLogger.logError(error as Error, {
-      operation: 'createCheckoutSession',
-      userId: session?.user?.id,
-      priceId: params.priceId,
-    });
+    console.error('[payment-subscription] createCheckoutSession error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '创建支付会话失败',

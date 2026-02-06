@@ -1,19 +1,16 @@
 'use server';
 
-import { getServerSession } from '@/lib/auth/server-session';
+import type { User } from 'better-auth/types';
 import { isAdmin } from '@/lib/auth/permissions';
+import { getServerSession } from '@/lib/auth/server-session';
 import {
-  uploadFile,
   deleteFile,
-  getFileList,
-  getFileInfo,
   type FileInfo,
+  getFileInfo,
+  getFileList,
+  uploadFile,
 } from '@/lib/files/file-service';
 import { getErrorMessage } from './error-messages';
-import { ErrorLogger } from '@/lib/logger/logger-utils';
-import type { User } from 'better-auth/types';
-
-const fileErrorLogger = new ErrorLogger('file-actions');
 
 export interface FileListResponse {
   files: FileInfo[];
@@ -60,11 +57,7 @@ export async function uploadFileAction(formData: FormData): Promise<FileUploadRe
       file: fileInfo,
     };
   } catch (error) {
-    fileErrorLogger.logError(error as Error, {
-      operation: 'uploadFile',
-      userId: session?.user?.id,
-      fileName: file?.name,
-    });
+    console.error('[file-actions] uploadFile error:', error);
 
     const errorMessage =
       error instanceof Error ? error.message : await getErrorMessage('fileUploadFailed');
@@ -87,7 +80,7 @@ export async function deleteFileAction(fileId: string): Promise<FileDeleteRespon
 
     // Check if user is admin - admins can delete any file
     const userIsAdmin = isAdmin(session.user);
-    
+
     // Pass userId only if user is not admin (to enforce ownership check)
     const success = await deleteFile(fileId, userIsAdmin ? undefined : session.user.id);
 
@@ -97,11 +90,7 @@ export async function deleteFileAction(fileId: string): Promise<FileDeleteRespon
 
     return { success: true };
   } catch (error) {
-    fileErrorLogger.logError(error as Error, {
-      operation: 'deleteFile',
-      userId: session?.user?.id,
-      fileId,
-    });
+    console.error('[file-actions] deleteFile error:', error);
 
     const errorMessage =
       error instanceof Error ? error.message : await getErrorMessage('fileDeleteFailed');
@@ -113,11 +102,7 @@ export async function deleteFileAction(fileId: string): Promise<FileDeleteRespon
  * 获取文件列表 Server Action
  */
 export async function getFileListAction(
-  options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-  } = {}
+  options: { page?: number; limit?: number; search?: string } = {}
 ): Promise<FileListResponse> {
   let session: { user?: User } | null = null;
 
@@ -139,13 +124,7 @@ export async function getFileListAction(
 
     return result;
   } catch (error) {
-    fileErrorLogger.logError(error as Error, {
-      operation: 'getFileList',
-      userId: session?.user?.id,
-      page: options.page,
-      limit: options.limit,
-      search: options.search,
-    });
+    console.error('[file-actions] getFileList error:', error);
 
     const errorMessage =
       error instanceof Error ? error.message : await getErrorMessage('fileListFailed');
@@ -178,11 +157,7 @@ export async function getFileInfoAction(fileId: string): Promise<FileInfo> {
     }
     return fileInfo;
   } catch (error) {
-    fileErrorLogger.logError(error as Error, {
-      operation: 'getFileInfo',
-      userId: session?.user?.id,
-      fileId,
-    });
+    console.error('[file-actions] getFileInfo error:', error);
     const errorMessage =
       error instanceof Error ? error.message : await getErrorMessage('fileInfoFailed');
     throw new Error(errorMessage);

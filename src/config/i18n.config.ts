@@ -1,15 +1,15 @@
-import type { I18nConfig } from "@/types";
+import type { I18nConfig } from '@/types';
 
 export const i18nConfig: I18nConfig = {
   // Supported languages
   locales: ['en', 'zh'] as const,
-  
+
   // Default language
   defaultLocale: 'en',
-  
+
   // Fallback language
   fallbackLocale: 'en',
-  
+
   // Language configurations
   languages: {
     en: {
@@ -54,7 +54,7 @@ export const i18nConfig: I18nConfig = {
     'faq',
     'blog',
     'legal',
-    'fileManager'
+    'fileManager',
   ],
 
   // Date and time formats for each locale
@@ -144,4 +144,4 @@ export const i18nConfig: I18nConfig = {
       },
     },
   },
-}; 
+};

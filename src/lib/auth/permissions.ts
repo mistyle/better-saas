@@ -1,31 +1,30 @@
-import { env } from '@/env';
 import type { User } from 'better-auth/types';
+import { env } from '@/env';
 
 export function getAdminEmails(): string[] {
   if (!env.ADMIN_EMAILS) {
     return [];
   }
-  
-  return env.ADMIN_EMAILS
-    .split(',')
-    .map(email => email.trim())
-    .filter(email => email.length > 0);
+
+  return env.ADMIN_EMAILS.split(',')
+    .map((email) => email.trim())
+    .filter((email) => email.length > 0);
 }
 
 export function isAdmin(user: User | null): boolean {
   if (!user) {
     return false;
   }
-  
+
   if (user.role === 'admin') {
     return true;
   }
-  
+
   if (user.email) {
     const adminEmails = getAdminEmails();
     return adminEmails.includes(user.email);
   }
-  
+
   return false;
 }
 

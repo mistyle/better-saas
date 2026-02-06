@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
-import { RouteGuard } from '@/components/route-guard';
-import { getThemeLayout } from '@/themes/loader';
-import { LoadingSkeleton } from '@/components/loading-skeleton';
-import PermissionWrapper from '@/components/auth/permission-wrapper';
 import { Suspense } from 'react';
+import PermissionWrapper from '@/components/auth/permission-wrapper';
+import { LoadingSkeleton } from '@/components/loading-skeleton';
+import { RouteGuard } from '@/components/route-guard';
+import { getThemeLayout } from '@/themes';
 
 // Force dynamic rendering for all dashboard routes
 // This is necessary because dashboard pages require admin permissions
@@ -31,4 +31,4 @@ export default async function DashboardLayout({ children }: Props) {
       </RouteGuard>
     </Suspense>
   );
-} 
+}

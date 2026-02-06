@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 import { env } from '@/env';
-import { createChildLogger } from '@/lib/logger/logger';
-
-const cronAuthLogger = createChildLogger('cron-auth');
 
 /**
  * 验证 cron 请求的合法性
@@ -12,29 +9,33 @@ const cronAuthLogger = createChildLogger('cron-auth');
 export function validateCronRequest(request: Request): NextResponse | null {
   // 如果没有配置 CRON_SECRET，则跳过验证（开发环境）
   if (!env.CRON_SECRET) {
-    cronAuthLogger.info('CRON_SECRET not configured, skipping authentication');
+    console.log('[cron-auth] CRON_SECRET not configured, skipping authentication');
     return null;
   }
 
   const url = new URL(request.url);
-  const providedSecret = request.headers.get('authorization')?.replace('Bearer ', '') || url.searchParams.get('secret');
-  
+  const providedSecret =
+    request.headers.get('authorization')?.replace('Bearer ', '') || url.searchParams.get('secret');
+
   if (providedSecret !== env.CRON_SECRET) {
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
     const userAgent = request.headers.get('user-agent');
-    
-    cronAuthLogger.warn({
+
+    console.warn('[cron-auth] Unauthorized cron job access attempt', {
       ip,
       userAgent,
       hasSecret: !!providedSecret,
       endpoint: url.pathname,
-    }, 'Unauthorized cron job access attempt');
-    
-    return NextResponse.json({
-      success: false,
-      message: 'Unauthorized: Invalid or missing cron secret',
-      error: 'CRON_AUTH_FAILED',
-    }, { status: 401 });
+    });
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Unauthorized: Invalid or missing cron secret',
+        error: 'CRON_AUTH_FAILED',
+      },
+      { status: 401 }
+    );
   }
 
   return null;

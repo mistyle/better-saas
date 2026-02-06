@@ -1,24 +1,21 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 import { authClient } from '@/lib/auth/auth-client';
-import { useIsAuthenticated, useAuthLoading } from '@/lib/auth/use-auth';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
-import { ErrorLogger } from '@/lib/logger/logger-utils';
-
-const signupErrorLogger = new ErrorLogger('signup-form');
+import { useAuthLoading, useIsAuthenticated } from '@/lib/auth/use-auth';
+import { cn } from '@/lib/utils';
 
 export function SignupForm({ className, ...props }: React.ComponentProps<'div'>) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations('auth');
-  
+
   const sessionLoading = useAuthLoading();
   const isAuthenticated = useIsAuthenticated();
 
@@ -48,10 +45,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
       setError(null);
       await authClient.signIn.social({ provider });
     } catch (err) {
-      signupErrorLogger.logError(err as Error, {
-        operation: 'socialLogin',
-        provider,
-      });
+      console.error('[signup-form] socialLogin error:', err);
     }
   };
 
@@ -121,7 +115,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
                 </div>
               )}
 
-                              {/* Social login buttons */}
+              {/* Social login buttons */}
               <div className="flex flex-col gap-4">
                 <Button
                   type="button"
@@ -177,7 +171,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
                 </span>
               </div>
 
-                              {/* Email password registration */}
+              {/* Email password registration */}
               <div className="grid gap-6">
                 <div className="grid gap-3">
                   <Label htmlFor="name">{t('name')}</Label>
@@ -259,8 +253,8 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
         {t('termsAndPrivacy.prefix')}{' '}
         <a href="/terms" className="underline underline-offset-4 hover:text-primary">
           {t('termsOfService')}
-        </a>
-        {' '}{t('termsAndPrivacy.middle')}{' '}
+        </a>{' '}
+        {t('termsAndPrivacy.middle')}{' '}
         <a href="/privacy" className="underline underline-offset-4 hover:text-primary">
           {t('privacyPolicy')}
         </a>

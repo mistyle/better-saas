@@ -8,18 +8,19 @@
  *   active theme → default theme
  *
  * Usage:
- *   const LoginForm = themeBlock<LoginFormProps>('login', 'LoginForm');
- *   const ProfileContent = themePage<ProfileProps>('profile', 'ProfileContent');
+ *   const LoginForm = themeBlock('login', 'LoginForm');
+ *   const ProfileContent = themePage('profile', 'ProfileContent');
  */
 
 import dynamic from 'next/dynamic';
 import type { ComponentType } from 'react';
+import type { BlockName, LayoutName, PageName } from './index';
 
 const theme = process.env.NEXT_PUBLIC_THEME || 'default';
 
 export function themeBlock<P extends object = Record<string, unknown>>(
-  blockName: string,
-  exportName: string,
+  blockName: BlockName,
+  exportName: string
 ): ComponentType<P> {
   return dynamic<P>(() =>
     import(
@@ -31,14 +32,14 @@ export function themeBlock<P extends object = Record<string, unknown>>(
         import(
           /* webpackInclude: /\.tsx?$/ */
           `@/themes/default/blocks/${blockName}`
-        ).then((mod) => ({ default: mod[exportName] as ComponentType<P> })),
-      ),
+        ).then((mod) => ({ default: mod[exportName] as ComponentType<P> }))
+      )
   );
 }
 
 export function themePage<P extends object = Record<string, unknown>>(
-  pageName: string,
-  exportName: string,
+  pageName: PageName,
+  exportName: string
 ): ComponentType<P> {
   return dynamic<P>(() =>
     import(
@@ -50,14 +51,14 @@ export function themePage<P extends object = Record<string, unknown>>(
         import(
           /* webpackInclude: /\.tsx?$/ */
           `@/themes/default/pages/${pageName}`
-        ).then((mod) => ({ default: mod[exportName] as ComponentType<P> })),
-      ),
+        ).then((mod) => ({ default: mod[exportName] as ComponentType<P> }))
+      )
   );
 }
 
 export function themeLayout<P extends object = Record<string, unknown>>(
-  layoutName: string,
-  exportName: string,
+  layoutName: LayoutName,
+  exportName: string
 ): ComponentType<P> {
   return dynamic<P>(() =>
     import(
@@ -69,7 +70,7 @@ export function themeLayout<P extends object = Record<string, unknown>>(
         import(
           /* webpackInclude: /\.tsx?$/ */
           `@/themes/default/layouts/${layoutName}`
-        ).then((mod) => ({ default: mod[exportName] as ComponentType<P> })),
-      ),
+        ).then((mod) => ({ default: mod[exportName] as ComponentType<P> }))
+      )
   );
 }

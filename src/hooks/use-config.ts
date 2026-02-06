@@ -1,12 +1,6 @@
 import { useMemo } from 'react';
-import { appConfig, featuresConfig, i18nConfig, paymentConfig, navbarConfig } from '@/config';
-import type {
-  AppConfig,
-  I18nConfig,
-  PaymentConfig,
-  PaymentPlan,
-  NavbarConfig,
-} from '@/types';
+import { appConfig, featuresConfig, i18nConfig, navbarConfig, paymentConfig } from '@/config';
+import type { AppConfig, I18nConfig, NavbarConfig, PaymentConfig, PaymentPlan } from '@/types';
 
 export function useAppConfig(): AppConfig {
   return useMemo(() => appConfig, []);

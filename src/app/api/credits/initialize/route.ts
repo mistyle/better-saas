@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { paymentConfig } from '@/config/payment.config';
 import { auth } from '@/lib/auth/auth';
 import { creditService } from '@/lib/credits';
-import { paymentConfig } from '@/config/payment.config';
 import { quotaService } from '@/lib/quota/quota-service';
 
 export async function POST(request: NextRequest) {
@@ -13,10 +13,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { userId } = await request.json();
@@ -35,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Add retry mechanism to handle transient database connection issues
     let creditAccount = null;
     let lastError = null;
-    
+
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         creditAccount = await creditService.getOrCreateCreditAccount(userId);
@@ -53,18 +50,19 @@ export async function POST(request: NextRequest) {
 
     // Check if this user has already received signup bonus (prevents duplicate grants from social logins)
     const signupReferenceId = `signup_${userId}`;
-    const existingSignupTransaction = await creditService.getTransactionHistory(userId, 100)
-      .then(txs => txs.find(tx => tx.referenceId === signupReferenceId))
+    const existingSignupTransaction = await creditService
+      .getTransactionHistory(userId, 100)
+      .then((txs) => txs.find((tx) => tx.referenceId === signupReferenceId))
       .catch(() => null);
     const alreadyReceivedBonus = !!existingSignupTransaction;
-    
+
     // Check if this is a newly created account (no previous transactions)
     let isNewAccount = false;
     if (!alreadyReceivedBonus) {
       try {
         const existingTransactions = await creditService.getTransactionHistory(userId, 1);
         isNewAccount = existingTransactions.length === 0;
-      } catch (txErr) {
+      } catch (_txErr) {
         // Fallback: infer by zero totals on the account to avoid blocking bonus grant
         isNewAccount = creditAccount.totalEarned === 0 && creditAccount.totalSpent === 0;
       }
@@ -74,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     if (isNewAccount && !alreadyReceivedBonus) {
       // Grant signup bonus credits for free plan (only for new accounts)
-      const freePlan = paymentConfig.plans.find(p => p.id === 'free');
+      const freePlan = paymentConfig.plans.find((p) => p.id === 'free');
       const signupCredits = freePlan?.credits?.onSignup;
 
       if (signupCredits && signupCredits > 0) {
@@ -83,7 +81,7 @@ export async function POST(request: NextRequest) {
           amount: signupCredits,
           source: 'bonus',
           description: 'Welcome bonus - thank you for signing up!',
-          referenceId: signupReferenceId
+          referenceId: signupReferenceId,
         });
         signupCreditsGranted = signupCredits;
         console.log(`✅ Granted ${signupCredits} signup bonus credits to ${session.user.email}`);
@@ -109,16 +107,15 @@ export async function POST(request: NextRequest) {
       data: {
         creditAccount,
         signupCreditsGranted,
-        isNewAccount
-      }
+        isNewAccount,
+      },
     });
-
   } catch (error) {
     console.error('Failed to initialize user credits:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to initialize credits',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

@@ -1,10 +1,16 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import db from '@/server/db';
 import { creditTransactions, userCredits } from '@/server/db/schema';
 import { DatabaseError } from '@/server/db/types';
 
 // Credit transaction types
-export type CreditTransactionType = 'earn' | 'spend' | 'refund' | 'admin_adjust' | 'freeze' | 'unfreeze';
+export type CreditTransactionType =
+  | 'earn'
+  | 'spend'
+  | 'refund'
+  | 'admin_adjust'
+  | 'freeze'
+  | 'unfreeze';
 export type CreditTransactionSource = 'subscription' | 'api_call' | 'admin' | 'storage' | 'bonus';
 
 export interface CreditTransaction {
@@ -55,14 +61,17 @@ export class CreditService {
    */
   async createCreditAccount(userId: string): Promise<UserCreditAccount> {
     try {
-      const creditAccount = await db.insert(userCredits).values({
-        id: crypto.randomUUID(),
-        userId,
-        balance: 0,
-        totalEarned: 0,
-        totalSpent: 0,
-        frozenBalance: 0,
-      }).returning();
+      const creditAccount = await db
+        .insert(userCredits)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          balance: 0,
+          totalEarned: 0,
+          totalSpent: 0,
+          frozenBalance: 0,
+        })
+        .returning();
 
       return creditAccount[0] as UserCreditAccount;
     } catch (error) {
@@ -81,7 +90,7 @@ export class CreditService {
         .where(eq(userCredits.userId, userId))
         .limit(1);
 
-      return account[0] as UserCreditAccount || null;
+      return (account[0] as UserCreditAccount) || null;
     } catch (error) {
       throw new DatabaseError(`Failed to get credit account: ${error}`);
     }
@@ -92,11 +101,11 @@ export class CreditService {
    */
   async getOrCreateCreditAccount(userId: string): Promise<UserCreditAccount> {
     let account = await this.getCreditAccount(userId);
-    
+
     if (!account) {
       account = await this.createCreditAccount(userId);
     }
-    
+
     return account;
   }
 
@@ -154,17 +163,20 @@ export class CreditService {
         .where(eq(userCredits.userId, userId));
 
       // Create transaction record
-      const transaction = await db.insert(creditTransactions).values({
-        id: crypto.randomUUID(),
-        userId,
-        type: 'earn',
-        amount,
-        balanceAfter: newBalance,
-        source,
-        description,
-        referenceId,
-        metadata: metadata ? JSON.stringify(metadata) : null,
-      }).returning();
+      const transaction = await db
+        .insert(creditTransactions)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          type: 'earn',
+          amount,
+          balanceAfter: newBalance,
+          source,
+          description,
+          referenceId,
+          metadata: metadata ? JSON.stringify(metadata) : null,
+        })
+        .returning();
 
       return transaction[0] as CreditTransaction;
     } catch (error) {
@@ -218,17 +230,20 @@ export class CreditService {
         .where(eq(userCredits.userId, userId));
 
       // Create transaction record
-      const transaction = await db.insert(creditTransactions).values({
-        id: crypto.randomUUID(),
-        userId,
-        type: 'spend',
-        amount,
-        balanceAfter: newBalance,
-        source,
-        description,
-        referenceId,
-        metadata: metadata ? JSON.stringify(metadata) : null,
-      }).returning();
+      const transaction = await db
+        .insert(creditTransactions)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          type: 'spend',
+          amount,
+          balanceAfter: newBalance,
+          source,
+          description,
+          referenceId,
+          metadata: metadata ? JSON.stringify(metadata) : null,
+        })
+        .returning();
 
       return transaction[0] as CreditTransaction;
     } catch (error) {
@@ -255,8 +270,8 @@ export class CreditService {
    * Get credit transaction history
    */
   async getTransactionHistory(
-    userId: string, 
-    limit = 50, 
+    userId: string,
+    limit = 50,
     offset = 0
   ): Promise<CreditTransaction[]> {
     try {
@@ -303,7 +318,7 @@ export class CreditService {
         referenceId,
       });
     }
-    
+
     return await this.spendCredits({
       userId,
       amount: Math.abs(amount),
@@ -317,8 +332,8 @@ export class CreditService {
    * Freeze credits (make them unavailable for spending)
    */
   async freezeCredits(
-    userId: string, 
-    amount: number, 
+    userId: string,
+    amount: number,
     description?: string,
     referenceId?: string
   ): Promise<CreditTransaction> {
@@ -359,16 +374,19 @@ export class CreditService {
         .where(eq(userCredits.userId, userId));
 
       // Create transaction record
-      const transaction = await db.insert(creditTransactions).values({
-        id: crypto.randomUUID(),
-        userId,
-        type: 'freeze',
-        amount,
-        balanceAfter: currentAccount.balance, // Balance doesn't change, only frozen amount
-        source: 'admin',
-        description: description || 'Credits frozen',
-        referenceId,
-      }).returning();
+      const transaction = await db
+        .insert(creditTransactions)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          type: 'freeze',
+          amount,
+          balanceAfter: currentAccount.balance, // Balance doesn't change, only frozen amount
+          source: 'admin',
+          description: description || 'Credits frozen',
+          referenceId,
+        })
+        .returning();
 
       return transaction[0] as CreditTransaction;
     } catch (error) {
@@ -380,8 +398,8 @@ export class CreditService {
    * Unfreeze credits
    */
   async unfreezeCredits(
-    userId: string, 
-    amount: number, 
+    userId: string,
+    amount: number,
     description?: string,
     referenceId?: string
   ): Promise<CreditTransaction> {
@@ -421,16 +439,19 @@ export class CreditService {
         .where(eq(userCredits.userId, userId));
 
       // Create transaction record
-      const transaction = await db.insert(creditTransactions).values({
-        id: crypto.randomUUID(),
-        userId,
-        type: 'unfreeze',
-        amount,
-        balanceAfter: currentAccount.balance, // Balance doesn't change, only frozen amount
-        source: 'admin',
-        description: description || 'Credits unfrozen',
-        referenceId,
-      }).returning();
+      const transaction = await db
+        .insert(creditTransactions)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          type: 'unfreeze',
+          amount,
+          balanceAfter: currentAccount.balance, // Balance doesn't change, only frozen amount
+          source: 'admin',
+          description: description || 'Credits unfrozen',
+          referenceId,
+        })
+        .returning();
 
       return transaction[0] as CreditTransaction;
     } catch (error) {

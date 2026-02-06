@@ -1,12 +1,12 @@
 'use client';
 
-import { ProtectedContainer } from '@/themes/default/layouts/protected-container';
-import { useIsAdmin } from '@/components/auth/permission-provider';
-import type { SidebarGroup } from '@/types';
-import { Coins, History, CreditCard, Files, Shield, Users, Key } from 'lucide-react';
+import { Coins, CreditCard, Files, History, Key, Shield, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
+import { useIsAdmin } from '@/components/auth/permission-provider';
+import { ProtectedContainer } from '@/themes/default/layouts/protected-container';
+import type { SidebarGroup } from '@/types';
 
 interface ProtectedLayoutClientProps {
   children: ReactNode;

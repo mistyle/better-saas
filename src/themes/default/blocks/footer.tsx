@@ -1,10 +1,10 @@
+import type React from 'react';
 import {
   Github as IconBrandGithub,
   Instagram as IconBrandInstagram,
   Linkedin as IconBrandLinkedin,
   Twitter as IconBrandTwitter,
 } from '@/lib/icons';
-import type React from 'react';
 
 interface FooterProps {
   logo?: {
@@ -61,8 +61,16 @@ const defaultSections = [
 ];
 
 const defaultSocialLinks = [
-  { icon: <IconBrandGithub strokeWidth={1} className="size-5" />, href: 'https://github.com/justnode/better-saas', label: 'Github' },
-  { icon: <IconBrandInstagram strokeWidth={1} className="size-5" />, href: '#', label: 'Instagram' },
+  {
+    icon: <IconBrandGithub strokeWidth={1} className="size-5" />,
+    href: 'https://github.com/justnode/better-saas',
+    label: 'Github',
+  },
+  {
+    icon: <IconBrandInstagram strokeWidth={1} className="size-5" />,
+    href: '#',
+    label: 'Instagram',
+  },
   { icon: <IconBrandTwitter strokeWidth={1} className="size-5" />, href: '#', label: 'Twitter' },
   { icon: <IconBrandLinkedin strokeWidth={1} className="size-5" />, href: '#', label: 'LinkedIn' },
 ];
@@ -109,11 +117,11 @@ export const Footer = ({
             </ul>
           </div>
           <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">
-            {sections.map((section, sectionIdx) => (
+            {sections.map((section, _sectionIdx) => (
               <div key={section.title}>
                 <h3 className="mb-4 font-bold">{section.title}</h3>
                 <ul className="space-y-3 text-muted-foreground text-sm">
-                  {section.links.map((link, linkIdx) => (
+                  {section.links.map((link, _linkIdx) => (
                     <li key={link.name} className="font-medium hover:text-primary">
                       <a href={link.href}>{link.name}</a>
                     </li>
@@ -126,7 +134,7 @@ export const Footer = ({
         <div className="mt-8 flex flex-col justify-between gap-4 border-t py-8 font-medium text-muted-foreground text-xs md:flex-row md:items-center md:text-left">
           <p className="order-2 lg:order-1">{copyright}</p>
           <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row">
-            {legalLinks.map((link, idx) => (
+            {legalLinks.map((link, _idx) => (
               <li key={link.name} className="hover:text-primary">
                 <a href={link.href}> {link.name}</a>
               </li>

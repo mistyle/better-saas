@@ -46,10 +46,9 @@ if [ "$MINIMAL" = true ]; then
   mkdir -p "$TARGET_DIR/layouts"
   mkdir -p "$TARGET_DIR/pages"
 
-  # Create placeholder index files
-  echo "// $THEME_NAME theme - blocks" > "$TARGET_DIR/blocks/index.tsx"
-  echo "// $THEME_NAME theme - layouts" > "$TARGET_DIR/layouts/index.tsx"
-  echo "// $THEME_NAME theme - pages" > "$TARGET_DIR/pages/index.tsx"
+  # Create placeholder README
+  echo "# $THEME_NAME theme" > "$TARGET_DIR/README.md"
+  echo "Add component overrides here. Missing components fall back to default." >> "$TARGET_DIR/README.md"
 
   echo "(minimal mode: only directory structure created, all components fall back to default)"
 else
@@ -57,8 +56,8 @@ else
   cp -r "$THEMES_DIR/default" "$TARGET_DIR"
 fi
 
-# Register the theme in src/themes/registry.ts
-REGISTRY_FILE="src/themes/registry.ts"
+# Register the theme in src/themes/index.ts
+REGISTRY_FILE="src/themes/index.ts"
 # Handle both single and multiple existing themes
 sed -i.bak "s/\] as const;/, '$THEME_NAME'] as const;/" "$REGISTRY_FILE"
 rm -f "$REGISTRY_FILE.bak"

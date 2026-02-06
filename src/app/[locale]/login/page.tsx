@@ -1,9 +1,9 @@
 'use client';
 
-import { themeBlock } from '@/themes/client-loader';
-import { useLogin } from '@/hooks/use-login';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
+import { useLogin } from '@/hooks/use-login';
+import { themeBlock } from '@/themes/client-loader';
 
 const LoginForm = themeBlock('login', 'LoginForm');
 
@@ -13,7 +13,7 @@ function LoginPageContent() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <LoginForm 
+        <LoginForm
           formData={loginData.formData}
           setFormData={loginData.setFormData}
           isLoading={loginData.isLoading}
@@ -29,14 +29,16 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
-        <div className="flex w-full max-w-sm flex-col items-center gap-6">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground text-sm">加载中...</p>
+    <Suspense
+      fallback={
+        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+          <div className="flex w-full max-w-sm flex-col items-center gap-6">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground text-sm">加载中...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <LoginPageContent />
     </Suspense>
   );

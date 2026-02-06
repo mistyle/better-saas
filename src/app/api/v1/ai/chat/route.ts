@@ -1,10 +1,10 @@
+import bcrypt from 'bcryptjs';
+import { eq, isNull, or } from 'drizzle-orm';
+import { type NextRequest, NextResponse } from 'next/server';
+import { creditsConfig } from '@/config/credits.config';
+import { CreditService } from '@/lib/credits/credit-service';
 import db from '@/server/db';
 import { apiKey, user, userCredits } from '@/server/db/schema';
-import { eq, or, isNull } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { CreditService } from '@/lib/credits/credit-service';
-import { creditsConfig } from '@/config/credits.config';
 
 // POST /api/v1/ai/chat - AI聊天API端点
 export async function POST(request: NextRequest) {
@@ -19,12 +19,9 @@ export async function POST(request: NextRequest) {
     }
 
     const apiKeyValue = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
+
     if (!apiKeyValue.startsWith('bs_')) {
-      return NextResponse.json(
-        { error: 'Invalid API key format' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid API key format' }, { status: 401 });
     }
 
     // 2. 查找并验证API Key
@@ -50,18 +47,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (!validApiKey) {
-      return NextResponse.json(
-        { error: 'Invalid API key' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
 
     // 3. 检查API Key是否过期
     if (validApiKey.expiresAt && new Date() > validApiKey.expiresAt) {
-      return NextResponse.json(
-        { error: 'API key has expired' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'API key has expired' }, { status: 401 });
     }
 
     // 4. 解析请求体
@@ -69,15 +60,12 @@ export async function POST(request: NextRequest) {
     const { message, model = 'gpt-3.5-turbo' } = body;
 
     if (!message || typeof message !== 'string') {
-      return NextResponse.json(
-        { error: 'Message is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
     // 5. 计算积分消耗
     const creditCost = creditsConfig.consumption.apiCall.costPerCall;
-    
+
     // 6. 检查用户积分余额
     const [userCredit] = await db
       .select()
@@ -103,17 +91,11 @@ export async function POST(request: NextRequest) {
       });
     } catch (error) {
       console.error('Failed to spend credits:', error);
-      return NextResponse.json(
-        { error: 'Failed to process payment' },
-        { status: 402 }
-      );
+      return NextResponse.json({ error: 'Failed to process payment' }, { status: 402 });
     }
 
     // 8. 更新API Key最后使用时间
-    await db
-      .update(apiKey)
-      .set({ lastUsedAt: new Date() })
-      .where(eq(apiKey.id, validApiKey.id));
+    await db.update(apiKey).set({ lastUsedAt: new Date() }).where(eq(apiKey.id, validApiKey.id));
 
     // 9. 模拟AI响应（实际项目中这里会调用真实的AI服务）
     const aiResponse = {
@@ -141,10 +123,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(aiResponse);
   } catch (error) {
     console.error('Error in AI chat API:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -160,7 +139,7 @@ export async function GET() {
     example: {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer bs_your_api_key_here',
+        Authorization: 'Bearer bs_your_api_key_here',
         'Content-Type': 'application/json',
       },
       body: {

@@ -1,18 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth/auth-client';
-import { useIsAuthenticated, useAuthLoading } from '@/lib/auth/use-auth';
+import { useAuthLoading, useIsAuthenticated } from '@/lib/auth/use-auth';
 import type { LoginFormData, UseLoginReturn } from '@/types/login';
 import { useToastMessages } from './use-toast-messages';
-import { ErrorLogger } from '@/lib/logger/logger-utils';
-
-const loginErrorLogger = new ErrorLogger('use-login');
 
 export function useLogin(): UseLoginReturn {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toastMessages = useToastMessages();
-  
+
   const isLoading = useAuthLoading();
   const isAuthenticated = useIsAuthenticated();
 
@@ -43,10 +40,7 @@ export function useLogin(): UseLoginReturn {
       setError(null);
       await authClient.signIn.social({ provider });
     } catch (err) {
-      loginErrorLogger.logError(err as Error, {
-        operation: 'socialLogin',
-        provider,
-      });
+      console.error('[use-login] socialLogin error:', err);
       toastMessages.error.socialLoginFailed();
     }
   };
@@ -97,4 +91,4 @@ export function useLogin(): UseLoginReturn {
     handleClearError,
     getRedirectUrl,
   };
-} 
+}

@@ -1,17 +1,14 @@
 'use server';
 
-import { getServerSession } from '@/lib/auth/server-session';
-import { getErrorMessage } from './error-messages';
-import { uploadFile } from '@/lib/files/file-service';
-import { ErrorLogger } from '@/lib/logger/logger-utils';
 import type { User } from 'better-auth/types';
-
-const avatarErrorLogger = new ErrorLogger('upload-avatar');
+import { getServerSession } from '@/lib/auth/server-session';
+import { uploadFile } from '@/lib/files/file-service';
+import { getErrorMessage } from './error-messages';
 
 export async function uploadAvatarAction(formData: FormData) {
   let session: { user?: User } | null = null;
   let file: File | null = null;
-  
+
   try {
     session = await getServerSession();
 
@@ -42,16 +39,10 @@ export async function uploadAvatarAction(formData: FormData) {
       fileInfo,
     };
   } catch (error) {
-    avatarErrorLogger.logError(error as Error, {
-      operation: 'uploadAvatar',
-      userId: session?.user?.id,
-      fileName: file?.name,
-      fileSize: file?.size,
-      fileType: file?.type,
-    });
-    
+    console.error('[upload-avatar] uploadAvatar error:', error);
+
     throw new Error(
       error instanceof Error ? error.message : await getErrorMessage('fileUploadFailed')
     );
   }
-} 
+}

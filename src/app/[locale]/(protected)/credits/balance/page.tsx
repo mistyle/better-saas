@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { getThemePage, getThemeBlock } from '@/themes/loader';
+import { getThemeBlock, getThemePage } from '@/themes';
 
 export default async function CreditsPageRoute() {
   const { CreditsPage } = await getThemePage('credits');

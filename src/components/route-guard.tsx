@@ -1,18 +1,14 @@
 'use client';
 
+import { ArrowLeft, Loader2, Lock, Shield } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect } from 'react';
+import { useIsAdmin } from '@/components/auth/permission-provider';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  useAuthLoading,
-  useIsAuthenticated,
-  useAuthInitialized, 
-} from '@/lib/auth/use-auth';
-import { useIsAdmin } from '@/components/auth/permission-provider';
-import { AlertCircle, ArrowLeft, Loader2, Lock, Shield } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useCallback } from 'react';
+import { useAuthInitialized, useAuthLoading, useIsAuthenticated } from '@/lib/auth/use-auth';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -95,9 +91,7 @@ export function RouteGuard({
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center p-6">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground text-sm">
-              {t('loading')}
-            </p>
+            <p className="mt-4 text-muted-foreground text-sm">{t('loading')}</p>
           </CardContent>
         </Card>
       </div>
@@ -117,9 +111,7 @@ export function RouteGuard({
               <Lock className="h-6 w-6 text-primary" />
             </div>
             <CardTitle>{t('accessDenied')}</CardTitle>
-            <CardDescription>
-              {t('loginRequired')}
-            </CardDescription>
+            <CardDescription>{t('loginRequired')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button
@@ -152,9 +144,7 @@ export function RouteGuard({
               <Shield className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
             <CardTitle>{t('adminRequired')}</CardTitle>
-            <CardDescription>
-              {t('adminRequiredDescription')}
-            </CardDescription>
+            <CardDescription>{t('adminRequiredDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button
@@ -165,11 +155,7 @@ export function RouteGuard({
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('goBack')}
             </Button>
-            <Button
-              onClick={() => router.push('/')}
-              className="w-full"
-              variant="outline"
-            >
+            <Button onClick={() => router.push('/')} className="w-full" variant="outline">
               {t('goHome')}
             </Button>
           </CardContent>

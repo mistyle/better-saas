@@ -1,5 +1,8 @@
 'use client';
 
+import { CreditCard, LogOut, Settings, Shield, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,11 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuthLoading, useIsAuthenticated, useUser } from '@/lib/auth/use-auth';
 import { authClient } from '@/lib/auth/auth-client';
-import { CreditCard, Home, LogOut, Settings, Shield, User } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useAuthLoading, useIsAuthenticated, useUser } from '@/lib/auth/use-auth';
 
 export function UserAvatarMenu() {
   const router = useRouter();

@@ -1,5 +1,7 @@
 'use client';
 
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,8 +10,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UserAvatarMenu } from '@/themes/default/blocks/user-avatar-menu';
-import { Moon, Sun } from 'lucide-react';
-import { useTheme } from 'next-themes';
 
 export function DashboardHeader() {
   const { setTheme } = useTheme();

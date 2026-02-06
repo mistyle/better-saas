@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { Activity, Database, Zap } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Activity, Database, Zap } from 'lucide-react';
 import { getQuotaUsage } from '@/server/actions/credit-actions';
-import { toast } from 'sonner';
 
 interface QuotaUsageData {
   apiCalls: {

@@ -1,28 +1,28 @@
 'use client';
 
+import {
+  Bell,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Files,
+  Home,
+  LayoutDashboard,
+  Menu,
+  PenTool,
+  Settings,
+  Shield,
+  Users,
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { ProtectedSidebarProps } from '@/types';
-import { 
-  ChevronDown, 
-  ChevronLeft, 
-  ChevronRight, 
-  Menu,
-  Users,
-  Bell,
-  Files,
-  PenTool,
-  CreditCard,
-  Shield,
-  Home,
-  Settings,
-  LayoutDashboard
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 
 // Icon mapping
 const iconMap = {

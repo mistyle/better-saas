@@ -1,13 +1,21 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Plus, Minus, RefreshCw, History, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getCreditHistory } from '@/server/actions/credit-actions';
-import { useRouter } from '@/i18n/navigation';
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  History,
+  Minus,
+  Plus,
+  RefreshCw,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useRouter } from '@/i18n/navigation';
 import type { CreditTransaction } from '@/lib/credits';
+import { getCreditHistory } from '@/server/actions/credit-actions';
 
 interface CreditHistoryProps {
   limit?: number;
@@ -15,10 +23,10 @@ interface CreditHistoryProps {
   enablePagination?: boolean;
 }
 
-export function CreditHistory({ 
-  limit = 5, 
-  showViewAll = false, 
-  enablePagination = false 
+export function CreditHistory({
+  limit = 5,
+  showViewAll = false,
+  enablePagination = false,
 }: CreditHistoryProps) {
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,31 +36,34 @@ export function CreditHistory({
 
   const itemsPerPage = enablePagination ? 10 : limit;
 
-  const fetchTransactions = useCallback(async (page = 1) => {
-    try {
-      setIsLoading(true);
-      const offset = (page - 1) * itemsPerPage;
-      const result = await getCreditHistory({ 
-        limit: itemsPerPage + 1, // Request one extra to check if there's more data
-        offset 
-      });
-      
-      if (result.success && result.data) {
-        const hasMore = result.data.length > itemsPerPage;
-        const displayData = hasMore ? result.data.slice(0, itemsPerPage) : result.data;
-        
-        setTransactions(displayData);
-        setHasMoreData(hasMore);
-      } else {
-        toast.error(result.error || 'Failed to load credit history');
+  const fetchTransactions = useCallback(
+    async (page = 1) => {
+      try {
+        setIsLoading(true);
+        const offset = (page - 1) * itemsPerPage;
+        const result = await getCreditHistory({
+          limit: itemsPerPage + 1, // Request one extra to check if there's more data
+          offset,
+        });
+
+        if (result.success && result.data) {
+          const hasMore = result.data.length > itemsPerPage;
+          const displayData = hasMore ? result.data.slice(0, itemsPerPage) : result.data;
+
+          setTransactions(displayData);
+          setHasMoreData(hasMore);
+        } else {
+          toast.error(result.error || 'Failed to load credit history');
+        }
+      } catch (error) {
+        toast.error('Failed to load credit history');
+        console.error('Error fetching credit history:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      toast.error('Failed to load credit history');
-      console.error('Error fetching credit history:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [itemsPerPage]);
+    },
+    [itemsPerPage]
+  );
 
   useEffect(() => {
     fetchTransactions(currentPage);
@@ -200,11 +211,9 @@ export function CreditHistory({
             <ChevronLeft className="h-4 w-4" />
             Previous
           </Button>
-          
-          <span className="text-muted-foreground text-sm">
-            Page {currentPage}
-          </span>
-          
+
+          <span className="text-muted-foreground text-sm">Page {currentPage}</span>
+
           <Button
             variant="outline"
             size="sm"

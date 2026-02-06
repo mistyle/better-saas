@@ -1,5 +1,7 @@
 'use client';
 
+import { Menu } from 'lucide-react';
+import Link from 'next/link';
 import {
   Accordion,
   AccordionContent,
@@ -16,14 +18,11 @@ import {
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useNavbar } from '@/hooks/use-navbar';
 import { LanguageSwitcher } from '@/themes/default/blocks/language-switcher';
 import { ThemeToggle } from '@/themes/default/blocks/theme-toggle';
 import { UserAvatarMenu } from '@/themes/default/blocks/user-avatar-menu';
-import { Book, Menu, Sunset, Trees, Zap } from 'lucide-react';
-import Link from 'next/link';
-import type { JSX } from 'react';
-import type { NavbarProps, MenuItem } from '@/types/navbar';
-import { useNavbar } from '@/hooks/use-navbar';
+import type { MenuItem, NavbarProps } from '@/types/navbar';
 
 function DesktopAuthDisplay({
   loginText,
@@ -122,7 +121,7 @@ const Navbar = ({
 
   const menuItems = menuWithIcons;
 
-      // Render desktop menu items
+  // Render desktop menu items
   const renderMenuItem = (item: MenuItem) => {
     if (item.items && item.items.length > 0) {
       return (
@@ -308,7 +307,7 @@ const Navbar = ({
 
 export function NavbarWrapper() {
   const navbarData = useNavbar();
-  
+
   return (
     <Navbar
       logo={navbarData.logo}

@@ -1,11 +1,8 @@
 'use server';
 
 import { getServerSession } from '@/lib/auth/server-session';
-import { paymentRepository } from '@/server/db/repositories/payment-repository';
 import type { ActionResult, PaymentRecord } from '@/payment/types';
-import { ErrorLogger } from '@/lib/logger/logger-utils';
-
-const billingErrorLogger = new ErrorLogger('billing-info');
+import { paymentRepository } from '@/server/db/repositories/payment-repository';
 
 export interface BillingInfo {
   activeSubscription?: PaymentRecord;
@@ -40,10 +37,7 @@ export async function getBillingInfo(): Promise<ActionResult<BillingInfo>> {
       },
     };
   } catch (error) {
-    billingErrorLogger.logError(error as Error, {
-      operation: 'getBillingInfo',
-      userId: session?.user?.id,
-    });
+    console.error('[billing-info] getBillingInfo error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '获取账单信息失败',
@@ -70,10 +64,7 @@ export async function getUserSubscription(): Promise<ActionResult<PaymentRecord 
       data: subscription,
     };
   } catch (error) {
-    billingErrorLogger.logError(error as Error, {
-      operation: 'getUserSubscription',
-      userId: session?.user?.id,
-    });
+    console.error('[billing-info] getUserSubscription error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '获取用户订阅失败',

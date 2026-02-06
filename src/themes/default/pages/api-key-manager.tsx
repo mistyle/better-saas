@@ -1,19 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { format } from 'date-fns';
+import { Copy, Eye, EyeOff, Key, Plus, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,9 +16,19 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Eye, EyeOff, Plus, Trash2, Key } from 'lucide-react';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface ApiKey {
   id: string;
@@ -159,7 +159,7 @@ export function SimpleApiKeyManager() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <div className='text-muted-foreground text-sm'>加载中...</div>
+            <div className="text-muted-foreground text-sm">加载中...</div>
           </div>
         </CardContent>
       </Card>
@@ -180,7 +180,7 @@ export function SimpleApiKeyManager() {
         {newlyCreatedKey && (
           <Card className="border-green-200 bg-green-50">
             <CardHeader className="pb-3">
-              <CardTitle className='text-green-800 text-sm'>新创建的API Key</CardTitle>
+              <CardTitle className="text-green-800 text-sm">新创建的API Key</CardTitle>
               <CardDescription className="text-green-600">
                 请立即复制并保存此密钥，它只会显示一次
               </CardDescription>
@@ -216,14 +216,14 @@ export function SimpleApiKeyManager() {
         )}
 
         {/* 创建新Key按钮 */}
-        <div className='flex items-center justify-between'>
-          <div className='text-muted-foreground text-sm'>
+        <div className="flex items-center justify-between">
+          <div className="text-muted-foreground text-sm">
             {apiKeys.length === 0 ? '暂无API Key' : `共 ${apiKeys.length} 个API Key`}
           </div>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button size="sm">
-                <Plus className='mr-2 h-4 w-4' />
+                <Plus className="mr-2 h-4 w-4" />
                 创建API Key
               </Button>
             </DialogTrigger>
@@ -271,13 +271,13 @@ export function SimpleApiKeyManager() {
               <Card key={key.id} className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className='mb-1 flex items-center gap-2'>
+                    <div className="mb-1 flex items-center gap-2">
                       <h4 className="font-medium">{key.name}</h4>
                       {key.expiresAt && new Date(key.expiresAt) < new Date() && (
                         <Badge variant="destructive">已过期</Badge>
                       )}
                     </div>
-                    <div className='space-y-1 text-muted-foreground text-sm'>
+                    <div className="space-y-1 text-muted-foreground text-sm">
                       <div>创建时间: {format(new Date(key.createdAt), 'yyyy-MM-dd HH:mm')}</div>
                       {key.expiresAt && (
                         <div>过期时间: {format(new Date(key.expiresAt), 'yyyy-MM-dd HH:mm')}</div>

@@ -1,11 +1,11 @@
 import '@/styles/globals.css';
 
+import { notFound } from 'next/navigation';
+import { hasLocale, NextIntlClientProvider } from 'next-intl';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { routing } from '@/i18n/routing';
-import { NextIntlClientProvider, hasLocale } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

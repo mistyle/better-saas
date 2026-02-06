@@ -2,17 +2,14 @@
 
 import { getServerSession } from '@/lib/auth/server-session';
 import { StripeProvider } from '@/payment/stripe/provider';
-import { paymentRepository } from '@/server/db/repositories/payment-repository';
 import type { ActionResult } from '@/payment/types';
-import { ErrorLogger } from '@/lib/logger/logger-utils';
-
-const cancelErrorLogger = new ErrorLogger('cancel-subscription');
+import { paymentRepository } from '@/server/db/repositories/payment-repository';
 
 export async function cancelSubscription(
   subscriptionId: string
 ): Promise<ActionResult<{ canceled: boolean }>> {
   let session: { user?: { id: string } } | null = null;
-  
+
   try {
     session = await getServerSession();
     if (!session?.user) {
@@ -65,16 +62,11 @@ export async function cancelSubscription(
       },
       message: '订阅已设置为在当前周期结束后取消',
     };
-
   } catch (error) {
-    cancelErrorLogger.logError(error as Error, {
-      operation: 'cancelSubscription',
-      userId: session?.user?.id,
-      subscriptionId,
-    });
+    console.error('[cancel-subscription] cancelSubscription error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : '取消订阅失败',
     };
   }
-} 
+}

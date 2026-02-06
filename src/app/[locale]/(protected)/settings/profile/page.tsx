@@ -1,8 +1,8 @@
 'use client';
 
-import { themePage } from '@/themes/client-loader';
-import { useProfile } from '@/hooks/use-profile';
 import { Loader2 } from 'lucide-react';
+import { useProfile } from '@/hooks/use-profile';
+import { themePage } from '@/themes/client-loader';
 
 const ProfileContent = themePage('profile', 'ProfileContent');
 

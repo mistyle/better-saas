@@ -16,4 +16,4 @@ export const featuresConfig = {
     systemSettings: true,
     analytics: true,
   },
-}; 
+};

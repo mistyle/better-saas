@@ -1,6 +1,6 @@
+import type { ReactNode } from 'react';
 import { Footer } from '../blocks/footer';
 import { NavbarWrapper } from '../blocks/navbar';
-import type { ReactNode } from 'react';
 
 interface LandingLayoutProps {
   children: ReactNode;

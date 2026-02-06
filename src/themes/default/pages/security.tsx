@@ -1,12 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { ErrorLogger } from '@/lib/logger/logger-utils';
-
-const securityErrorLogger = new ErrorLogger('security-content');
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function SecurityContent() {
   const t = useTranslations('security');
@@ -21,9 +18,7 @@ export function SecurityContent() {
       // Mock API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
-      securityErrorLogger.logError(error as Error, {
-        operation: 'resetPassword',
-      });
+      console.error('[security-content] resetPassword error:', error);
     } finally {
       setIsResettingPassword(false);
     }
@@ -36,9 +31,7 @@ export function SecurityContent() {
       // Mock API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
-      securityErrorLogger.logError(error as Error, {
-        operation: 'deleteAccount',
-      });
+      console.error('[security-content] deleteAccount error:', error);
     } finally {
       setIsDeletingAccount(false);
     }

@@ -1,14 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRouter } from '@/i18n/navigation';
 import { CreditBalance } from '../blocks/credit-balance';
 import { CreditHistory } from '../blocks/credit-history';
 import { QuotaOverview } from '../blocks/quota-overview';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import { useRouter } from '@/i18n/navigation';
 
 export function CreditsPage() {
   const router = useRouter();

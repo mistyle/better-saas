@@ -1,15 +1,15 @@
 'use server';
 
-import { getServerSession } from '@/lib/auth/server-session';
-import { creditService } from '@/lib/credits';
-import { paymentRepository } from '@/server/db/repositories/payment-repository';
-import type { ActionResult } from '@/payment/types';
-import type { UserCreditAccount, CreditTransaction } from '@/lib/credits';
+import { and, eq } from 'drizzle-orm';
 import { creditsConfig } from '@/config/credits.config';
+import { getServerSession } from '@/lib/auth/server-session';
+import type { CreditTransaction, UserCreditAccount } from '@/lib/credits';
+import { creditService } from '@/lib/credits';
+import { type QuotaService, quotaService, updateQuotaUsage } from '@/lib/quota/quota-service';
+import type { ActionResult } from '@/payment/types';
 import db from '@/server/db';
+import { paymentRepository } from '@/server/db/repositories/payment-repository';
 import { userQuotaUsage } from '@/server/db/schema';
-import { eq, and } from 'drizzle-orm';
-import { quotaService, updateQuotaUsage, type QuotaService } from '@/lib/quota/quota-service';
 
 export interface GetCreditBalanceResponse extends UserCreditAccount {
   availableBalance: number;
@@ -48,7 +48,7 @@ export async function getCreditBalance(): Promise<ActionResult<GetCreditBalanceR
     }
 
     const account = await creditService.getOrCreateCreditAccount(session.user.id);
-    
+
     return {
       success: true,
       data: {
@@ -82,12 +82,8 @@ export async function getCreditHistory(
     }
 
     const { limit = 50, offset = 0 } = params;
-    const transactions = await creditService.getTransactionHistory(
-      session.user.id,
-      limit,
-      offset
-    );
-    
+    const transactions = await creditService.getTransactionHistory(session.user.id, limit, offset);
+
     return {
       success: true,
       data: transactions,
@@ -121,25 +117,28 @@ export async function getQuotaUsage(): Promise<ActionResult<GetQuotaUsageRespons
 
     // Get user's current subscription to determine limits
     const subscription = await paymentRepository.findActiveSubscriptionByUserId(session.user.id);
-    
+
     // Get actual usage from database
-    const usageRecords = await db.select({
-      service: userQuotaUsage.service,
-      usedAmount: userQuotaUsage.usedAmount,
-    }).from(userQuotaUsage)
-    .where(and(
-      eq(userQuotaUsage.userId, session.user.id),
-      eq(userQuotaUsage.period, currentPeriod)
-    ));
+    const usageRecords = await db
+      .select({
+        service: userQuotaUsage.service,
+        usedAmount: userQuotaUsage.usedAmount,
+      })
+      .from(userQuotaUsage)
+      .where(
+        and(eq(userQuotaUsage.userId, session.user.id), eq(userQuotaUsage.period, currentPeriod))
+      );
 
     // Extract usage data
-    const apiCallUsage = usageRecords.find(record => record.service === 'api_call')?.usedAmount || 0;
-    const storageUsage = usageRecords.find(record => record.service === 'storage')?.usedAmount || 0;
-    
+    const apiCallUsage =
+      usageRecords.find((record) => record.service === 'api_call')?.usedAmount || 0;
+    const storageUsage =
+      usageRecords.find((record) => record.service === 'storage')?.usedAmount || 0;
+
     // Determine limits based on subscription
     const baseApiCallLimit = creditsConfig.freeUser.apiCall.freeQuotaCalls;
     const baseStorageLimit = creditsConfig.freeUser.storage.freeQuotaGB * 1024 * 1024 * 1024; // Convert GB to bytes
-    
+
     let apiCallLimit = baseApiCallLimit;
     let storageLimit = baseStorageLimit;
     const isApiUnlimited = false;
@@ -160,7 +159,7 @@ export async function getQuotaUsage(): Promise<ActionResult<GetQuotaUsageRespons
           break;
       }
     }
-    
+
     return {
       success: true,
       data: {
@@ -208,7 +207,7 @@ export async function grantCreditsToUser(
     // Note: The user type from better-auth might not have role by default
     const userWithRole = session.user as typeof session.user & { role?: string };
     const isAdmin = userWithRole.role === 'admin';
-    
+
     if (!isAdmin) {
       return {
         success: false,
@@ -234,7 +233,7 @@ export async function grantCreditsToUser(
         grantedAt: new Date().toISOString(),
       },
     });
-    
+
     return {
       success: true,
       data: transaction,
@@ -295,7 +294,7 @@ export async function spendCredits(
         timestamp: new Date().toISOString(),
       },
     });
-    
+
     return {
       success: true,
       data: transaction,
