@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { RouteGuard } from '@/components/route-guard';
-import { ProtectedLayoutClient } from '@/themes/default/layouts/protected';
+import { getThemeLayout } from '@/themes/loader';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 import PermissionWrapper from '@/components/auth/permission-wrapper';
 import { Suspense } from 'react';
@@ -20,7 +20,8 @@ type Props = {
  * 2. Admin permissions (PermissionWrapper)
  * 3. Dashboard-specific layout (ProtectedLayoutClient)
  */
-export default function DashboardLayout({ children }: Props) {
+export default async function DashboardLayout({ children }: Props) {
+  const { ProtectedLayoutClient } = await getThemeLayout('protected');
   return (
     <Suspense fallback={<LoadingSkeleton />}>
       <RouteGuard useSkeletonFallback>

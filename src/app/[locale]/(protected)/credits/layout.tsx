@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { RouteGuard } from '@/components/route-guard';
-import { ProtectedLayoutClient } from '@/themes/default/layouts/protected';
+import { getThemeLayout } from '@/themes/loader';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 import PermissionWrapper from '@/components/auth/permission-wrapper';
 import { Suspense } from 'react';
@@ -23,7 +23,8 @@ type Props = {
  * Admin users will see both Dashboard and Settings menus
  * Regular users will only see Settings menu
  */
-export default function CreditsLayout({ children }: Props) {
+export default async function CreditsLayout({ children }: Props) {
+  const { ProtectedLayoutClient } = await getThemeLayout('protected');
   return (
     <Suspense fallback={<LoadingSkeleton />}>
       <RouteGuard useSkeletonFallback>

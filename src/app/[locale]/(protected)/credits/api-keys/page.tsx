@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { SimpleApiKeyManager } from '@/themes/default/pages/api-key-manager';
-import { ApiUsageGuide } from '@/themes/default/blocks/api-usage-guide';
+import { getThemePage } from '@/themes/loader';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('settings.apiKeys');
@@ -14,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ApiKeysPage() {
   const t = await getTranslations('settings.apiKeys');
+  const { SimpleApiKeyManager } = await getThemePage('api-key-manager');
   return (
     <div className="space-y-6" data-testid="api-keys-content">
       <div>
@@ -22,8 +22,6 @@ export default async function ApiKeysPage() {
       </div>
 
       <SimpleApiKeyManager />
-
-      <ApiUsageGuide />
     </div>
   );
 }

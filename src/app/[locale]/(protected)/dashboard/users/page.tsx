@@ -2,12 +2,14 @@
 
 import { AdminGuard } from '@/components/route-guard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserList } from '@/themes/default/blocks/user-list';
+import { themeBlock } from '@/themes/client-loader';
 import { getUserStats, type UserStats } from '@/server/actions/user-actions';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Users, UserCheck, UserPlus, CreditCard } from 'lucide-react';
+
+const UserList = themeBlock('user-list', 'UserList');
 
 export default function UsersPage() {
   const t = useTranslations('sidebar');

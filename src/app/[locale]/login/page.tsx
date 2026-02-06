@@ -1,9 +1,11 @@
 'use client';
 
-import { LoginForm } from '@/themes/default/blocks/login';
+import { themeBlock } from '@/themes/client-loader';
 import { useLogin } from '@/hooks/use-login';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
+
+const LoginForm = themeBlock('login', 'LoginForm');
 
 function LoginPageContent() {
   const loginData = useLogin();

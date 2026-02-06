@@ -1,8 +1,10 @@
 'use client';
 
-import { ProfileContent } from '@/themes/default/pages/profile';
+import { themePage } from '@/themes/client-loader';
 import { useProfile } from '@/hooks/use-profile';
 import { Loader2 } from 'lucide-react';
+
+const ProfileContent = themePage('profile', 'ProfileContent');
 
 export default function ProfilePage() {
   const profileData = useProfile();

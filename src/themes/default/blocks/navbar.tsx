@@ -229,7 +229,7 @@ const Navbar = ({
 
   return (
     <section className="py-2">
-      <div className="container">
+      <div className="container mx-auto">
         <nav className="hidden justify-between lg:flex">
           <div className="flex items-center gap-6">
             <Link href={logo.url} className="flex items-center gap-2">

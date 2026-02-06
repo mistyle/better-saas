@@ -1,4 +1,4 @@
-import { BillingPage } from '@/themes/default/pages/billing';
+import { getThemePage } from '@/themes/loader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Suspense } from 'react';
@@ -59,7 +59,8 @@ function BillingPageSkeleton() {
   );
 }
 
-export default function BillingPageRoute() {
+export default async function BillingPageRoute() {
+  const { BillingPage } = await getThemePage('billing');
   return (
     <Suspense fallback={<BillingPageSkeleton />}>
       <BillingPage />
