@@ -4,11 +4,5 @@
       "main": true,
       "*": false
     }
-  },
-  "crons": [
-    {
-      "path": "/api/cron/monthly-credits",
-      "schedule": "0 2 1 * *"
-    }
-  ]
+  }
 }

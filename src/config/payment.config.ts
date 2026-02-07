@@ -23,7 +23,6 @@ export const paymentConfig: PaymentConfig = {
       price: 0,
       interval: null,
       credits: {
-        monthly: 50, // 每月免费积分
         onSignup: 50, // 注册赠送积分
       },
       features: [
