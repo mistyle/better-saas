@@ -1,126 +1,65 @@
 'use server';
 
+import { and, eq, isNull } from 'drizzle-orm';
 import { env } from '@/env';
 import { getServerSession } from '@/lib/auth/server-session';
 import { StripeProvider } from '@/payment/stripe/provider';
 import type { ActionResult } from '@/payment/types';
+import db from '@/server/db';
+import { user } from '@/server/db/schema';
 import { paymentRepository } from '@/server/db/repositories/payment-repository';
+
+/**
+ * Get existing or create new Stripe Customer ID for a user, and persist it to the user table.
+ * Uses atomic UPDATE ... WHERE stripe_customer_id IS NULL to prevent duplicate Stripe Customers
+ * under concurrent requests.
+ */
+async function getOrCreateStripeCustomerId(
+  stripeProvider: StripeProvider,
+  userId: string,
+  email: string,
+  name?: string
+): Promise<string> {
+  // Try to read persisted stripeCustomerId from user table
+  const [dbUser] = await db
+    .select({ stripeCustomerId: user.stripeCustomerId })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
+
+  if (dbUser?.stripeCustomerId) {
+    return dbUser.stripeCustomerId;
+  }
+
+  // Create a new Stripe Customer
+  const customerId = await stripeProvider.createCustomer(userId, email, name);
+
+  // Atomic persist: only update if stripe_customer_id is still NULL (no race)
+  const updated = await db
+    .update(user)
+    .set({ stripeCustomerId: customerId, updatedAt: new Date() })
+    .where(and(eq(user.id, userId), isNull(user.stripeCustomerId)))
+    .returning({ stripeCustomerId: user.stripeCustomerId });
+
+  if (updated.length === 0) {
+    // Another request already set the stripeCustomerId — read the persisted value
+    const [existing] = await db
+      .select({ stripeCustomerId: user.stripeCustomerId })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+    // TODO: optionally delete the orphaned Stripe Customer `customerId`
+    return existing!.stripeCustomerId!;
+  }
+
+  return customerId;
+}
 
 export interface CreateSubscriptionParams {
   priceId: string;
   trialDays?: number;
   successUrl?: string;
   cancelUrl?: string;
-}
-
-export async function createSubscription(
-  params: CreateSubscriptionParams
-): Promise<ActionResult<{ url?: string; subscriptionId?: string }>> {
-  let session: { user?: { id: string; email: string; name?: string } } | null = null;
-
-  try {
-    session = await getServerSession();
-    if (!session?.user) {
-      return {
-        success: false,
-        error: '请先登录',
-      };
-    }
-
-    const { priceId, trialDays, successUrl, cancelUrl } = params;
-    const stripeProvider = new StripeProvider();
-
-    // 检查用户是否已有活跃订阅
-    const existingSubscription = await paymentRepository.findActiveSubscriptionByUserId(
-      session.user.id
-    );
-    if (existingSubscription) {
-      return {
-        success: false,
-        error: '您已有活跃的订阅',
-      };
-    }
-
-    // 创建或获取 Stripe 客户
-    // TODO: 从用户表获取 stripeCustomerId
-    let customerId = null; // session.user.stripeCustomerId;
-    if (!customerId) {
-      customerId = await stripeProvider.createCustomer(
-        session.user.id,
-        session.user.email,
-        session.user.name || undefined
-      );
-
-      // TODO: 更新用户的 stripeCustomerId
-      // await updateUserStripeCustomerId(session.user.id, customerId);
-    }
-
-    // 创建订阅
-    const subscription = await stripeProvider.createSubscription({
-      userId: session.user.id,
-      priceId,
-      customerId,
-      trialPeriodDays: trialDays,
-      metadata: {
-        userId: session.user.id,
-        userEmail: session.user.email,
-      },
-    });
-
-    // 保存支付记录到数据库
-    await paymentRepository.create({
-      id: subscription.id,
-      priceId,
-      type: 'subscription',
-      interval: subscription.interval,
-      userId: session.user.id,
-      customerId,
-      subscriptionId: subscription.id,
-      status: subscription.status,
-      periodStart: subscription.periodStart,
-      periodEnd: subscription.periodEnd,
-      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-      trialStart: subscription.trialStart,
-      trialEnd: subscription.trialEnd,
-    });
-
-    // 记录事件
-    await paymentRepository.createEvent({
-      paymentId: subscription.id,
-      eventType: 'created',
-      eventData: JSON.stringify({
-        subscriptionId: subscription.id,
-        priceId,
-        status: subscription.status,
-      }),
-    });
-
-    // 如果订阅需要支付确认，返回客户端密钥
-    if (subscription.clientSecret) {
-      return {
-        success: true,
-        data: {
-          subscriptionId: subscription.id,
-        },
-        message: '订阅创建成功，请完成支付确认',
-      };
-    }
-
-    // 如果是试用期或免费订阅，直接成功
-    return {
-      success: true,
-      data: {
-        subscriptionId: subscription.id,
-      },
-      message: '订阅创建成功',
-    };
-  } catch (error) {
-    console.error('[payment-subscription] createSubscription error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : '创建订阅失败',
-    };
-  }
 }
 
 export async function createCheckoutSession(
@@ -151,16 +90,13 @@ export async function createCheckoutSession(
       };
     }
 
-    // 创建或获取 Stripe 客户
-    // TODO: 从用户表获取 stripeCustomerId
-    let customerId = null; // session.user.stripeCustomerId;
-    if (!customerId) {
-      customerId = await stripeProvider.createCustomer(
-        session.user.id,
-        session.user.email,
-        session.user.name || undefined
-      );
-    }
+    // 创建或获取 Stripe 客户（从用户表读取或创建后持久化）
+    const customerId = await getOrCreateStripeCustomerId(
+      stripeProvider,
+      session.user.id,
+      session.user.email,
+      session.user.name || undefined
+    );
 
     // 获取价格信息以确定是订阅还是一次性支付
     const { stripe } = await import('@/payment/stripe/client');

@@ -9,13 +9,12 @@ import {
   Plus,
   RefreshCw,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/navigation';
-import type { CreditTransaction } from '@/lib/credits';
-import { getCreditHistory } from '@/server/actions/credit-actions';
+import { useCreditHistory } from '@/hooks/use-credits';
 
 interface CreditHistoryProps {
   limit?: number;
@@ -28,46 +27,26 @@ export function CreditHistory({
   showViewAll = false,
   enablePagination = false,
 }: CreditHistoryProps) {
-  const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasMoreData, setHasMoreData] = useState(false);
   const router = useRouter();
 
   const itemsPerPage = enablePagination ? 10 : limit;
+  const offset = (currentPage - 1) * itemsPerPage;
 
-  const fetchTransactions = useCallback(
-    async (page = 1) => {
-      try {
-        setIsLoading(true);
-        const offset = (page - 1) * itemsPerPage;
-        const result = await getCreditHistory({
-          limit: itemsPerPage + 1, // Request one extra to check if there's more data
-          offset,
-        });
+  // Request one extra to check if there's more data
+  const { transactions: rawTransactions, error, isLoading } = useCreditHistory({
+    limit: itemsPerPage + 1,
+    offset,
+  });
 
-        if (result.success && result.data) {
-          const hasMore = result.data.length > itemsPerPage;
-          const displayData = hasMore ? result.data.slice(0, itemsPerPage) : result.data;
-
-          setTransactions(displayData);
-          setHasMoreData(hasMore);
-        } else {
-          toast.error(result.error || 'Failed to load credit history');
-        }
-      } catch (error) {
-        toast.error('Failed to load credit history');
-        console.error('Error fetching credit history:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [itemsPerPage]
-  );
+  const hasMoreData = rawTransactions.length > itemsPerPage;
+  const transactions = hasMoreData ? rawTransactions.slice(0, itemsPerPage) : rawTransactions;
 
   useEffect(() => {
-    fetchTransactions(currentPage);
-  }, [fetchTransactions, currentPage]);
+    if (error) {
+      toast.error('Failed to load credit history');
+    }
+  }, [error]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

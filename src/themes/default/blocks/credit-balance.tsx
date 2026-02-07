@@ -1,52 +1,21 @@
 'use client';
 
 import { Coins, Lock, RefreshCw, TrendingUp } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { UserCreditAccount } from '@/lib/credits';
-import { getCreditBalance } from '@/server/actions/credit-actions';
-
-interface CreditBalanceData extends UserCreditAccount {
-  availableBalance: number;
-}
+import { useCreditBalance } from '@/hooks/use-credits';
 
 export function CreditBalance() {
-  const [creditData, setCreditData] = useState<CreditBalanceData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const fetchCreditBalance = useCallback(async () => {
-    try {
-      const result = await getCreditBalance();
-      if (result.success && result.data) {
-        const data = result.data;
-        setCreditData({
-          ...data,
-          availableBalance: data.balance - data.frozenBalance,
-        });
-      } else {
-        toast.error(result.error || 'Failed to load credit balance');
-      }
-    } catch (error) {
-      toast.error('Failed to load credit balance');
-      console.error('Error fetching credit balance:', error);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await fetchCreditBalance();
-  };
+  const { balance: creditData, error, isLoading, isRefreshing, refresh } = useCreditBalance();
 
   useEffect(() => {
-    fetchCreditBalance();
-  }, [fetchCreditBalance]);
+    if (error) {
+      toast.error('Failed to load credit balance');
+    }
+  }, [error]);
 
   if (isLoading) {
     return (
@@ -73,7 +42,7 @@ export function CreditBalance() {
           <CardDescription>Unable to load credit information</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleRefresh} variant="outline" size="sm">
+          <Button onClick={refresh} variant="outline" size="sm">
             <RefreshCw className="mr-2 h-4 w-4" />
             Try Again
           </Button>
@@ -139,7 +108,7 @@ export function CreditBalance() {
           <p className="text-muted-foreground text-xs">Lifetime earnings</p>
           <div className="mt-2">
             <Button
-              onClick={handleRefresh}
+              onClick={refresh}
               variant="ghost"
               size="sm"
               disabled={isRefreshing}

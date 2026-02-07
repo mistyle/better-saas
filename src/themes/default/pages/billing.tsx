@@ -3,41 +3,25 @@
 import { Calendar, CreditCard, RefreshCw } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { BillingInfo } from '@/server/actions/payment/get-billing-info';
-import { getBillingInfo } from '@/server/actions/payment/get-billing-info';
-import { syncSingleSubscription } from '@/server/actions/payment/sync-subscription-periods';
+import { useBilling } from '@/hooks/use-billing';
 import { SubscriptionCard } from '@/themes/default/blocks/subscription-card';
 
 export function BillingPage() {
-  const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { billingInfo, error, isLoading: loading, isSyncing: syncing, syncSubscription, refresh } = useBilling();
   const searchParams = useSearchParams();
   const t = useTranslations('billing');
 
-  const loadBillingInfo = useCallback(async () => {
-    try {
-      setError(null);
-      setLoading(true);
-      const result = await getBillingInfo();
-      if (result.success && result.data) {
-        setBillingInfo(result.data);
-      } else {
-        setError(result.error || t('get_billing_info_failed'));
-      }
-    } catch (err) {
-      setError(t('get_billing_info_failed'));
-      console.error('[billing-page] loadBillingInfo error:', err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (error) {
+      console.error('[billing-page] loadBillingInfo error:', error);
+      toast.error(t('get_billing_info_failed'));
     }
-  }, [t]);
+  }, [error, t]);
 
   const handleSyncSubscription = useCallback(async () => {
     if (!billingInfo?.activeSubscription?.subscriptionId) {
@@ -46,25 +30,13 @@ export function BillingPage() {
     }
 
     try {
-      setSyncing(true);
-      const result = await syncSingleSubscription(billingInfo.activeSubscription.subscriptionId);
-      if (result.success) {
-        toast.success(result.message || t('sync_subscription_success'));
-        await loadBillingInfo(); // Reload billing info after sync
-      } else {
-        toast.error(result.error || t('sync_subscription_failed'));
-      }
+      await syncSubscription(billingInfo.activeSubscription.subscriptionId);
+      toast.success(t('sync_subscription_success'));
     } catch (err) {
       toast.error(t('sync_subscription_failed'));
       console.error('[billing-page] syncSubscription error:', err);
-    } finally {
-      setSyncing(false);
     }
-  }, [billingInfo?.activeSubscription?.subscriptionId, loadBillingInfo, t]);
-
-  useEffect(() => {
-    loadBillingInfo();
-  }, [loadBillingInfo]);
+  }, [billingInfo?.activeSubscription?.subscriptionId, syncSubscription, t]);
 
   // Handle URL parameters to show payment result notifications
   useEffect(() => {
@@ -129,7 +101,7 @@ export function BillingPage() {
         <Card>
           <CardContent className="flex items-center justify-center p-6">
             <div className="text-center">
-              <p className="text-destructive">{error}</p>
+              <p className="text-destructive">{error.message}</p>
             </div>
           </CardContent>
         </Card>
@@ -220,7 +192,7 @@ export function BillingPage() {
       {billingInfo?.activeSubscription ? (
         <SubscriptionCard
           subscription={billingInfo.activeSubscription}
-          onUpdate={loadBillingInfo}
+          onUpdate={refresh}
         />
       ) : (
         <Card>

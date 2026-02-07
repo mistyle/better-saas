@@ -10,7 +10,7 @@ import {
   User,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -32,15 +32,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  type GetUsersOptions,
-  getUsers,
-  type UserListResponse,
-} from '@/server/actions/user-actions';
+import { useUsers } from '@/hooks/use-users';
 
 export function UserList() {
-  const [data, setData] = useState<UserListResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'createdAt'>('createdAt');
@@ -57,28 +51,20 @@ export function UserList() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const fetchUsers = useCallback(async (options: GetUsersOptions) => {
-    try {
-      setLoading(true);
-      const result = await getUsers(options);
-      setData(result);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      toast.error('获取用户列表失败');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data, error, isLoading: loading } = useUsers({
+    page,
+    pageSize,
+    search: debouncedSearch,
+    sortBy,
+    sortOrder,
+  });
 
   useEffect(() => {
-    fetchUsers({
-      page,
-      pageSize,
-      search: debouncedSearch,
-      sortBy,
-      sortOrder,
-    });
-  }, [fetchUsers, page, pageSize, debouncedSearch, sortBy, sortOrder]);
+    if (error) {
+      console.error('Error fetching users:', error);
+      toast.error('获取用户列表失败');
+    }
+  }, [error]);
 
   const handleSort = (column: 'name' | 'email' | 'createdAt') => {
     if (sortBy === column) {

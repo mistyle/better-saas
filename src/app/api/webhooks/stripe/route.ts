@@ -146,7 +146,7 @@ async function handlePlanUpgrade(
         amount: creditDifference,
         source: 'subscription',
         description: `Upgrade bonus from ${oldPlan.name} to ${newPlan.name}`,
-        referenceId: `upgrade_${subscriptionId}_${Date.now()}`,
+        referenceId: `upgrade_${subscriptionId}_${oldPriceId}_${newPriceId}`,
         metadata: {
           oldPlanId: oldPlan.id,
           newPlanId: newPlan.id,
@@ -167,7 +167,7 @@ async function handlePlanUpgrade(
         amount: immediateCredits,
         source: 'subscription',
         description: `Immediate credits for upgrading to ${newPlan.name}`,
-        referenceId: `upgrade_immediate_${subscriptionId}_${Date.now()}`,
+        referenceId: `upgrade_immediate_${subscriptionId}_${oldPriceId}_${newPriceId}`,
         metadata: {
           planId: newPlan.id,
           subscriptionId,

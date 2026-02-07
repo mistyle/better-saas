@@ -43,6 +43,13 @@
       "when": 1770392763424,
       "tag": "0005_drop_user_quota_usage",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770419463133,
+      "tag": "0006_marvelous_nomad",
+      "breakpoints": true
     }
   ]
 }

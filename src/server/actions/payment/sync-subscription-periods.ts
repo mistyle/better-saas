@@ -1,79 +1,9 @@
 'use server';
 
 import { getServerSession } from '@/lib/auth/server-session';
-import { StripeProvider } from '@/payment/stripe/provider';
 import type { ActionResult } from '@/payment/types';
 import { paymentRepository } from '@/server/db/repositories/payment-repository';
 import type { SubscriptionWithPeriod } from '@/types/stripe-extended';
-
-export async function syncSubscriptionPeriods(): Promise<ActionResult<{ updated: number }>> {
-  let session: { user?: { id: string } } | null = null;
-
-  try {
-    session = await getServerSession();
-    if (!session?.user) {
-      return {
-        success: false,
-        error: '请先登录',
-      };
-    }
-
-    const stripeProvider = new StripeProvider();
-
-    // Get all active subscriptions for the user that have null period dates
-    const subscriptions = await paymentRepository.findByUserId(session.user.id);
-    const activeSubscriptions = subscriptions.filter(
-      (sub) =>
-        sub.type === 'subscription' &&
-        sub.subscriptionId &&
-        ['active', 'trialing', 'past_due'].includes(sub.status) &&
-        (!sub.periodStart || !sub.periodEnd)
-    );
-
-    let updatedCount = 0;
-
-    for (const subscription of activeSubscriptions) {
-      try {
-        // Get fresh subscription data from Stripe
-        if (!subscription.subscriptionId) continue;
-
-        const stripeSubscription = await stripeProvider.getSubscription(
-          subscription.subscriptionId
-        );
-
-        if (
-          stripeSubscription &&
-          (stripeSubscription.periodStart || stripeSubscription.periodEnd)
-        ) {
-          // Update the database with the correct period information
-          await paymentRepository.update(subscription.id, {
-            periodStart: stripeSubscription.periodStart,
-            periodEnd: stripeSubscription.periodEnd,
-            status: stripeSubscription.status,
-            cancelAtPeriodEnd: stripeSubscription.cancelAtPeriodEnd,
-          });
-
-          updatedCount++;
-        }
-      } catch (error) {
-        console.error('[sync-subscription-periods] syncSubscriptionPeriods error:', error);
-        // Continue with other subscriptions even if one fails
-      }
-    }
-
-    return {
-      success: true,
-      data: { updated: updatedCount },
-      message: `Successfully updated ${updatedCount} subscription(s)`,
-    };
-  } catch (error) {
-    console.error('[sync-subscription-periods] syncSubscriptionPeriods error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : '同步订阅期间失败',
-    };
-  }
-}
 
 export async function syncSingleSubscription(
   subscriptionId: string
@@ -97,8 +27,6 @@ export async function syncSingleSubscription(
         error: '订阅不存在或无权操作',
       };
     }
-
-    const _stripeProvider = new StripeProvider();
 
     // Get fresh subscription data directly from Stripe API with expanded data
     const { stripe } = await import('@/payment/stripe/client');

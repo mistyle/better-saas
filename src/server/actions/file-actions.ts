@@ -6,7 +6,6 @@ import { getServerSession } from '@/lib/auth/server-session';
 import {
   deleteFile,
   type FileInfo,
-  getFileInfo,
   getFileList,
   uploadFile,
 } from '@/lib/files/file-service';
@@ -132,34 +131,3 @@ export async function getFileListAction(
   }
 }
 
-/**
- * 获取文件信息 Server Action
- */
-export async function getFileInfoAction(fileId: string): Promise<FileInfo> {
-  let session: { user?: User } | null = null;
-
-  try {
-    session = await getServerSession();
-
-    if (!session?.user) {
-      throw new Error(await getErrorMessage('unauthorizedAccess'));
-    }
-
-    const fileInfo = await getFileInfo(fileId);
-
-    if (!fileInfo) {
-      throw new Error(await getErrorMessage('fileNotFound'));
-    }
-
-    // 检查权限：只有文件所有者可以查看
-    if (fileInfo.uploadUserId !== session.user.id) {
-      throw new Error(await getErrorMessage('fileAccessDenied'));
-    }
-    return fileInfo;
-  } catch (error) {
-    console.error('[file-actions] getFileInfo error:', error);
-    const errorMessage =
-      error instanceof Error ? error.message : await getErrorMessage('fileInfoFailed');
-    throw new Error(errorMessage);
-  }
-}

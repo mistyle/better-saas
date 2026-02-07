@@ -45,29 +45,3 @@ export async function getBillingInfo(): Promise<ActionResult<BillingInfo>> {
   }
 }
 
-export async function getUserSubscription(): Promise<ActionResult<PaymentRecord | null>> {
-  let session: { user?: { id: string } } | null = null;
-
-  try {
-    session = await getServerSession();
-    if (!session?.user) {
-      return {
-        success: false,
-        error: '请先登录',
-      };
-    }
-
-    const subscription = await paymentRepository.findActiveSubscriptionByUserId(session.user.id);
-
-    return {
-      success: true,
-      data: subscription,
-    };
-  } catch (error) {
-    console.error('[billing-info] getUserSubscription error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : '获取用户订阅失败',
-    };
-  }
-}

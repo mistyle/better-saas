@@ -2,35 +2,25 @@
 
 import { CreditCard, UserCheck, UserPlus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { AdminGuard } from '@/components/route-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getUserStats, type UserStats } from '@/server/actions/user-actions';
+import { useUserStats } from '@/hooks/use-users';
 import { themeBlock } from '@/themes/client-loader';
 
 const UserList = themeBlock('user-list', 'UserList');
 
 export default function UsersPage() {
   const t = useTranslations('sidebar');
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { stats, error, isLoading: loading } = useUserStats();
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const result = await getUserStats();
-        setStats(result);
-      } catch (error) {
-        console.error('Error fetching user stats:', error);
-        toast.error('获取用户统计失败');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
+    if (error) {
+      console.error('Error fetching user stats:', error);
+      toast.error('获取用户统计失败');
+    }
+  }, [error]);
 
   const formatNumber = (num: number) => {
     return num.toLocaleString('zh-CN');
