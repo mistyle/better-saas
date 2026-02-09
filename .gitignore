@@ -50,12 +50,12 @@ yarn-error.log*
 
 /.source
 /.swc
-# fumadocs generated docs output (not project docs)
-/docs/generated/
+/docs
 
 /.cursor
 /.claude
 /.agent
+/.agents
 /.kiro
 CLAUDE.md
 
