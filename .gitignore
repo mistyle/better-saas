@@ -5,10 +5,6 @@
 /.pnp
 .pnp.js
 
-# testing
-/coverage
-/playwright-report
-/test-results
 
 # database
 /prisma/db.sqlite
@@ -54,11 +50,14 @@ yarn-error.log*
 
 /.source
 /.swc
-/docs/
+/docs
 
 /.cursor
-CLAUDE.md
+/.claude
+/.agent
+/.agents
 /.kiro
+CLAUDE.md
 
 /.open-next
 /.wrangler

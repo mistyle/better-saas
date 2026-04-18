@@ -41,6 +41,10 @@
     "error": "Authentication Error",
     "accessDenied": "Access Denied",
     "loginRequired": "Please login to access this page",
+    "adminRequired": "Admin Access Required",
+    "adminRequiredDescription": "This page is only accessible to administrators. If you believe this is an error, please contact the system administrator.",
+    "goBack": "Go Back",
+    "goHome": "Go to Home",
     "goToLogin": "Go to Login",
     "retry": "Retry",
     "refreshSession": "Refresh Session",
@@ -202,17 +206,18 @@
     "credits": "Credits",
     "balance": "Balance",
     "history": "History",
-    "apiKeys": "API Keys"
+    "apiKeys": "API Keys",
+    "blog": "Blog",
+    "blogCategories": "Categories"
   },
   "navbar": {
     "logo": {
-      "title": "Suit Photo",
+      "title": "Better-SaaS",
       "alt": "logo"
     },
     "menu": {
       "blog": "Blog",
       "document": "Document",
-      "components": "Components",
       "pricing": "Pricing",
       "resources": "Resources",
       "helpCenter": "Help Center",
@@ -286,35 +291,35 @@
       "placeholder": "Enter your email address"
     }
   },
-  "billing":{
-    "title":"Billing",
-    "description":"Manage your subscription and payments history",
-    "current_plan":"Current Plan",
-    "current_no_plan":"No Plan",
-    "goto_plan":"You can select the suitable subscription plan on the pricing page",
-    "current_payment":"payment history",
-    "all_payment_history":"All your payment records",
-    "no_payment_history":"There is no payment record for the moment",
-    "get_billing_info_failed":"Get billing info failed",
-    "no_subscription_info":"No subscription info found",
-    "sync_subscription_success":"Subscription info sync success",
-    "sync_subscription_failed":"Subscription info sync failed",
-    "payment_success_active":"Payment successful! Your subscription has been activated.",
-    "payment_success_canceled":"Payment canceled. You can subscribe again at any time.",
-    "unknow":"Unknown",
-    "active":"Active",
-    "trial":"Trial",
-    "past_due":"Past Due",
-    "canceled":"Canceled",
-    "incomplete":"Incomplete",
-    "syncing":"同步中...",
-    "sync_subscription_info":"Sync subscription info",
-    "subscription":"Subscription",
-    "one_time_payment":"One Time Payment",
-    "month_payment":"Month Payment",
-    "year_payment":"Year Payment",
-    "billing_cycle":"Billing Cycle",
-    "price_id":"Price ID"
+  "billing": {
+    "title": "Billing",
+    "description": "Manage your subscription and payments history",
+    "current_plan": "Current Plan",
+    "current_no_plan": "No Plan",
+    "goto_plan": "You can select the suitable subscription plan on the pricing page",
+    "current_payment": "payment history",
+    "all_payment_history": "All your payment records",
+    "no_payment_history": "There is no payment record for the moment",
+    "get_billing_info_failed": "Get billing info failed",
+    "no_subscription_info": "No subscription info found",
+    "sync_subscription_success": "Subscription info sync success",
+    "sync_subscription_failed": "Subscription info sync failed",
+    "payment_success_active": "Payment successful! Your subscription has been activated.",
+    "payment_success_canceled": "Payment canceled. You can subscribe again at any time.",
+    "unknow": "Unknown",
+    "active": "Active",
+    "trial": "Trial",
+    "past_due": "Past Due",
+    "canceled": "Canceled",
+    "incomplete": "Incomplete",
+    "syncing": "Syncing...",
+    "sync_subscription_info": "Sync subscription info",
+    "subscription": "Subscription",
+    "one_time_payment": "One Time Payment",
+    "month_payment": "Month Payment",
+    "year_payment": "Year Payment",
+    "billing_cycle": "Billing Cycle",
+    "price_id": "Price ID"
   },
   "security": {
     "title": "Security",
@@ -343,7 +348,8 @@
     "backToBlog": "Back to Blog",
     "author": "Author",
     "publishedOn": "Published on",
-    "tags": "Tags"
+    "tags": "Tags",
+    "allCategories": "All"
   },
   "legal": {
     "terms": {
@@ -416,11 +422,5 @@
         "content": "If you have any questions about this Privacy Policy, please contact us. support@suitphoto.com"
       }
     }
-  },
-  "blocks": {
-    "title": "Component Library",
-    "description": "Explore our carefully designed component collection, each optimized for direct use in your projects",
-    "viewComponents": "View components",
-    "backToBlocks": "Back to Blocks"
   }
 }

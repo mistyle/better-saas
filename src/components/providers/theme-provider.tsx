@@ -2,7 +2,7 @@
 
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import type { ReactNode } from 'react';
-import { themeConfig } from '../../config/theme.config';
+import { appearanceConfig } from '@/config/appearance.config';
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -15,7 +15,7 @@ interface ThemeProviderProps {
 export function ThemeProvider({
   children,
   attribute = 'class',
-  defaultTheme = themeConfig.defaultTheme,
+  defaultTheme = appearanceConfig.defaultTheme,
   enableSystem = true,
   disableTransitionOnChange = true,
   ...props

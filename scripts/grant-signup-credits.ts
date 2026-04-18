@@ -1,25 +1,25 @@
 import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import { eq } from 'drizzle-orm';
-import { env } from '../src/env';
-import { user, userCredits } from '../src/server/db/schema';
-import { creditService } from '../src/lib/credits';
+import { drizzle } from 'drizzle-orm/neon-http';
 import { paymentConfig } from '../src/config/payment.config';
+import { env } from '../src/env';
+import { creditService } from '../src/lib/credits';
+import { user, userCredits } from '../src/server/db/schema';
 
 // Initialize database connection
 const sql = neon(env.DATABASE_URL);
-const db = drizzle(sql, { 
-  schema: { user, userCredits } 
+const db = drizzle(sql, {
+  schema: { user, userCredits },
 });
 
 async function grantSignupCredits() {
   console.log('🎁 Starting to grant signup credits to users with zero balance...');
-  
+
   try {
     // 1. 获取所有积分余额为0的用户（说明他们没有获得注册奖励）
     console.log('📊 Finding users with zero credit balance...');
-    
+
     const usersWithZeroCredits = await db
       .select({
         userId: user.id,
@@ -45,7 +45,7 @@ async function grantSignupCredits() {
     }
 
     // 2. 获取免费计划的注册奖励积分
-    const freePlan = paymentConfig.plans.find(p => p.id === 'free');
+    const freePlan = paymentConfig.plans.find((p) => p.id === 'free');
     const signupCredits = freePlan?.credits?.onSignup || 50; // 默认50积分
 
     console.log(`Will grant ${signupCredits} signup credits to each user`);
@@ -58,7 +58,7 @@ async function grantSignupCredits() {
     for (const userData of usersWithZeroCredits) {
       try {
         console.log(`Processing user: ${userData.userEmail} (${userData.userId})`);
-        
+
         // 发放注册奖励积分
         await creditService.earnCredits({
           userId: userData.userId,
@@ -77,17 +77,16 @@ async function grantSignupCredits() {
 
         console.log(`✅ Granted ${signupCredits} credits to ${userData.userEmail}`);
         successCount++;
-        
+
         // 添加小延迟避免数据库压力
-        await new Promise(resolve => setTimeout(resolve, 50));
-        
+        await new Promise((resolve) => setTimeout(resolve, 50));
       } catch (error) {
         errorCount++;
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        errors.push({ 
-          userId: userData.userId, 
-          email: userData.userEmail, 
-          error: errorMessage 
+        errors.push({
+          userId: userData.userId,
+          email: userData.userEmail,
+          error: errorMessage,
         });
         console.error(`❌ Failed to grant credits to ${userData.userEmail}:`, errorMessage);
       }
@@ -109,14 +108,16 @@ async function grantSignupCredits() {
     // 5. 验证结果
     if (successCount > 0) {
       console.log('\n🔍 Verifying results...');
-      
+
       // 随机检查几个用户的积分余额
       const sampleUsers = usersWithZeroCredits.slice(0, 3);
       for (const sampleUser of sampleUsers) {
         try {
           const account = await creditService.getCreditAccount(sampleUser.userId);
           if (account) {
-            console.log(`✅ ${sampleUser.userEmail}: ${account.balance} credits (Total Earned: ${account.totalEarned})`);
+            console.log(
+              `✅ ${sampleUser.userEmail}: ${account.balance} credits (Total Earned: ${account.totalEarned})`
+            );
           }
         } catch (error) {
           console.log(`❌ Failed to verify ${sampleUser.userEmail}: ${error}`);
@@ -132,7 +133,6 @@ async function grantSignupCredits() {
       totalCreditsGranted: successCount * signupCredits,
       errors: errors.length > 0 ? errors : undefined,
     };
-
   } catch (error) {
     console.error('💥 Fatal error in signup credits granting:', error);
     return {

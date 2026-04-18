@@ -1,7 +1,7 @@
-import { BillingPage } from '@/components/billing/billing-page';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Suspense } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { getThemePage } from '@/themes';
 
 function BillingPageSkeleton() {
   return (
@@ -59,10 +59,11 @@ function BillingPageSkeleton() {
   );
 }
 
-export default function BillingPageRoute() {
+export default async function BillingPageRoute() {
+  const { BillingPage } = await getThemePage('billing');
   return (
     <Suspense fallback={<BillingPageSkeleton />}>
       <BillingPage />
     </Suspense>
   );
-} 
+}

@@ -1,12 +1,12 @@
-import { useUser, useUpdateUser, useAuthLoading } from '@/store/auth-store';
-import type { ProfileFormData, UseProfileReturn } from '@/types/profile';
+import { useEffect, useState } from 'react';
+import { authClient } from '@/lib/auth/auth-client';
+import { useAuthLoading, useUser } from '@/lib/auth/use-auth';
 import { uploadAvatarAction } from '@/server/actions/upload-avatar';
-import { useState, useEffect } from 'react';
+import type { ProfileFormData, UseProfileReturn } from '@/types/profile';
 import { useToastMessages } from './use-toast-messages';
 
 export function useProfile(): UseProfileReturn {
   const user = useUser();
-  const updateUser = useUpdateUser();
   const isLoading = useAuthLoading();
   const toastMessages = useToastMessages();
 
@@ -41,13 +41,13 @@ export function useProfile(): UseProfileReturn {
 
     setIsUpdatingName(true);
     try {
-      const result = await updateUser({ name: formData.name.trim() });
-      if (result.success) {
+      const result = await authClient.updateUser({ name: formData.name.trim() });
+      if (result.data?.status) {
         toastMessages.success.nameUpdated();
       } else {
-        toastMessages.error.nameUpdateFailed(result.error);
+        toastMessages.error.nameUpdateFailed(result.error?.message);
       }
-    } catch (error) {
+    } catch (_error) {
       toastMessages.error.nameUpdateFailed();
     } finally {
       setIsUpdatingName(false);
@@ -62,11 +62,11 @@ export function useProfile(): UseProfileReturn {
 
       const result = await uploadAvatarAction(formData);
 
-      const updateResult = await updateUser({ image: result.url });
-      if (updateResult.success) {
+      const updateResult = await authClient.updateUser({ image: result.url });
+      if (updateResult.data?.status) {
         toastMessages.success.avatarUpdated();
       } else {
-        toastMessages.error.avatarUpdateFailed(updateResult.error);
+        toastMessages.error.avatarUpdateFailed(updateResult.error?.message);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : undefined;

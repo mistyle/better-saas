@@ -1,7 +1,9 @@
 'use client';
 
-import { AdminGuard } from '@/components/admin-guard';
-import { FileManager } from '@/components/file-manager/file-manager';
+import { AdminGuard } from '@/components/route-guard';
+import { themePage } from '@/themes/client-loader';
+
+const FileManager = themePage('file-manager', 'FileManager');
 
 export default function FilesPage() {
   return (

@@ -4,7 +4,13 @@ import { creditTransactions, userCredits } from '@/server/db/schema';
 import { DatabaseError } from '@/server/db/types';
 
 // Credit transaction types
-export type CreditTransactionType = 'earn' | 'spend' | 'refund' | 'admin_adjust' | 'freeze' | 'unfreeze';
+export type CreditTransactionType =
+  | 'earn'
+  | 'spend'
+  | 'refund'
+  | 'admin_adjust'
+  | 'freeze'
+  | 'unfreeze';
 export type CreditTransactionSource = 'subscription' | 'api_call' | 'admin' | 'storage' | 'bonus';
 
 export interface CreditTransaction {
@@ -55,14 +61,17 @@ export class CreditService {
    */
   async createCreditAccount(userId: string): Promise<UserCreditAccount> {
     try {
-      const creditAccount = await db.insert(userCredits).values({
-        id: crypto.randomUUID(),
-        userId,
-        balance: 0,
-        totalEarned: 0,
-        totalSpent: 0,
-        frozenBalance: 0,
-      }).returning();
+      const creditAccount = await db
+        .insert(userCredits)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          balance: 0,
+          totalEarned: 0,
+          totalSpent: 0,
+          frozenBalance: 0,
+        })
+        .returning();
 
       return creditAccount[0] as UserCreditAccount;
     } catch (error) {
@@ -81,7 +90,7 @@ export class CreditService {
         .where(eq(userCredits.userId, userId))
         .limit(1);
 
-      return account[0] as UserCreditAccount || null;
+      return (account[0] as UserCreditAccount) || null;
     } catch (error) {
       throw new DatabaseError(`Failed to get credit account: ${error}`);
     }
@@ -92,16 +101,17 @@ export class CreditService {
    */
   async getOrCreateCreditAccount(userId: string): Promise<UserCreditAccount> {
     let account = await this.getCreditAccount(userId);
-    
+
     if (!account) {
       account = await this.createCreditAccount(userId);
     }
-    
+
     return account;
   }
 
   /**
    * Earn credits (add to balance)
+   * Uses database transaction to ensure atomicity of balance update + transaction record insert.
    */
   async earnCredits(params: EarnCreditsParams): Promise<CreditTransaction> {
     const { userId, amount, source, description, referenceId, metadata } = params;
@@ -111,62 +121,66 @@ export class CreditService {
     }
 
     try {
-      // Get or create credit account
-      let account = await db
-        .select()
-        .from(userCredits)
-        .where(eq(userCredits.userId, userId))
-        .limit(1);
-
-      if (account.length === 0) {
-        // Create account if doesn't exist
-        await db.insert(userCredits).values({
-          id: crypto.randomUUID(),
-          userId,
-          balance: 0,
-          totalEarned: 0,
-          totalSpent: 0,
-          frozenBalance: 0,
-        });
-
-        account = await db
+      return await db.transaction(async (tx) => {
+        // Get or create credit account
+        let account = await tx
           .select()
           .from(userCredits)
           .where(eq(userCredits.userId, userId))
           .limit(1);
-      }
 
-      const currentAccount = account[0];
-      if (!currentAccount) {
-        throw new Error('Failed to retrieve credit account after creation');
-      }
-      const newBalance = currentAccount.balance + amount;
-      const newTotalEarned = currentAccount.totalEarned + amount;
+        if (account.length === 0) {
+          // Create account if doesn't exist
+          await tx.insert(userCredits).values({
+            id: crypto.randomUUID(),
+            userId,
+            balance: 0,
+            totalEarned: 0,
+            totalSpent: 0,
+            frozenBalance: 0,
+          });
 
-      // Update credit account
-      await db
-        .update(userCredits)
-        .set({
-          balance: newBalance,
-          totalEarned: newTotalEarned,
-          updatedAt: new Date(),
-        })
-        .where(eq(userCredits.userId, userId));
+          account = await tx
+            .select()
+            .from(userCredits)
+            .where(eq(userCredits.userId, userId))
+            .limit(1);
+        }
 
-      // Create transaction record
-      const transaction = await db.insert(creditTransactions).values({
-        id: crypto.randomUUID(),
-        userId,
-        type: 'earn',
-        amount,
-        balanceAfter: newBalance,
-        source,
-        description,
-        referenceId,
-        metadata: metadata ? JSON.stringify(metadata) : null,
-      }).returning();
+        // Atomic update: use sql expression to avoid read-then-write race
+        const updated = await tx
+          .update(userCredits)
+          .set({
+            balance: sql`${userCredits.balance} + ${amount}`,
+            totalEarned: sql`${userCredits.totalEarned} + ${amount}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(userCredits.userId, userId))
+          .returning();
 
-      return transaction[0] as CreditTransaction;
+        const updatedAccount = updated[0];
+        if (!updatedAccount) {
+          throw new Error('Failed to update credit account');
+        }
+
+        // Create transaction record
+        const transaction = await tx
+          .insert(creditTransactions)
+          .values({
+            id: crypto.randomUUID(),
+            userId,
+            type: 'earn',
+            amount,
+            balanceAfter: updatedAccount.balance,
+            source,
+            description,
+            referenceId,
+            metadata: metadata ? JSON.stringify(metadata) : null,
+          })
+          .returning();
+
+        return transaction[0] as CreditTransaction;
+      });
     } catch (error) {
       throw new DatabaseError(`Failed to earn credits: ${error}`);
     }
@@ -174,6 +188,7 @@ export class CreditService {
 
   /**
    * Spend credits (deduct from balance)
+   * Uses database transaction + atomic SQL WHERE condition to prevent concurrent over-spending (TOCTOU).
    */
   async spendCredits(params: SpendCreditsParams): Promise<CreditTransaction> {
     const { userId, amount, source, description, referenceId, metadata } = params;
@@ -183,54 +198,57 @@ export class CreditService {
     }
 
     try {
-      // Get credit account
-      const account = await db
-        .select()
-        .from(userCredits)
-        .where(eq(userCredits.userId, userId))
-        .limit(1);
+      return await db.transaction(async (tx) => {
+        // Atomic update with balance check in WHERE clause to prevent concurrent over-spending
+        const updated = await tx
+          .update(userCredits)
+          .set({
+            balance: sql`${userCredits.balance} - ${amount}`,
+            totalSpent: sql`${userCredits.totalSpent} + ${amount}`,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(userCredits.userId, userId),
+              sql`${userCredits.balance} - ${userCredits.frozenBalance} >= ${amount}`
+            )
+          )
+          .returning();
 
-      if (account.length === 0) {
-        throw new Error('Credit account not found');
-      }
+        if (updated.length === 0 || !updated[0]) {
+          // Distinguish between account not found and insufficient credits
+          const account = await tx
+            .select()
+            .from(userCredits)
+            .where(eq(userCredits.userId, userId))
+            .limit(1);
 
-      const currentAccount = account[0];
-      if (!currentAccount) {
-        throw new Error('Credit account not found');
-      }
-      const availableBalance = currentAccount.balance - currentAccount.frozenBalance;
+          if (account.length === 0) {
+            throw new Error('Credit account not found');
+          }
+          throw new Error('Insufficient credits');
+        }
 
-      if (availableBalance < amount) {
-        throw new Error('Insufficient credits');
-      }
+        const updatedAccount = updated[0];
 
-      const newBalance = currentAccount.balance - amount;
-      const newTotalSpent = currentAccount.totalSpent + amount;
+        // Create transaction record
+        const transaction = await tx
+          .insert(creditTransactions)
+          .values({
+            id: crypto.randomUUID(),
+            userId,
+            type: 'spend',
+            amount,
+            balanceAfter: updatedAccount.balance,
+            source,
+            description,
+            referenceId,
+            metadata: metadata ? JSON.stringify(metadata) : null,
+          })
+          .returning();
 
-      // Update credit account
-      await db
-        .update(userCredits)
-        .set({
-          balance: newBalance,
-          totalSpent: newTotalSpent,
-          updatedAt: new Date(),
-        })
-        .where(eq(userCredits.userId, userId));
-
-      // Create transaction record
-      const transaction = await db.insert(creditTransactions).values({
-        id: crypto.randomUUID(),
-        userId,
-        type: 'spend',
-        amount,
-        balanceAfter: newBalance,
-        source,
-        description,
-        referenceId,
-        metadata: metadata ? JSON.stringify(metadata) : null,
-      }).returning();
-
-      return transaction[0] as CreditTransaction;
+        return transaction[0] as CreditTransaction;
+      });
     } catch (error) {
       throw new DatabaseError(`Failed to spend credits: ${error}`);
     }
@@ -255,8 +273,8 @@ export class CreditService {
    * Get credit transaction history
    */
   async getTransactionHistory(
-    userId: string, 
-    limit = 50, 
+    userId: string,
+    limit = 50,
     offset = 0
   ): Promise<CreditTransaction[]> {
     try {
@@ -303,7 +321,7 @@ export class CreditService {
         referenceId,
       });
     }
-    
+
     return await this.spendCredits({
       userId,
       amount: Math.abs(amount),
@@ -315,10 +333,11 @@ export class CreditService {
 
   /**
    * Freeze credits (make them unavailable for spending)
+   * Uses database transaction + atomic SQL WHERE condition.
    */
   async freezeCredits(
-    userId: string, 
-    amount: number, 
+    userId: string,
+    amount: number,
     description?: string,
     referenceId?: string
   ): Promise<CreditTransaction> {
@@ -327,50 +346,54 @@ export class CreditService {
     }
 
     try {
-      const account = await db
-        .select()
-        .from(userCredits)
-        .where(eq(userCredits.userId, userId))
-        .limit(1);
+      return await db.transaction(async (tx) => {
+        // Atomic update with available balance check
+        const updated = await tx
+          .update(userCredits)
+          .set({
+            frozenBalance: sql`${userCredits.frozenBalance} + ${amount}`,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(userCredits.userId, userId),
+              sql`${userCredits.balance} - ${userCredits.frozenBalance} >= ${amount}`
+            )
+          )
+          .returning();
 
-      if (account.length === 0) {
-        throw new Error('Credit account not found');
-      }
+        if (updated.length === 0 || !updated[0]) {
+          const account = await tx
+            .select()
+            .from(userCredits)
+            .where(eq(userCredits.userId, userId))
+            .limit(1);
 
-      const currentAccount = account[0];
-      if (!currentAccount) {
-        throw new Error('Credit account not found');
-      }
-      const availableBalance = currentAccount.balance - currentAccount.frozenBalance;
+          if (account.length === 0) {
+            throw new Error('Credit account not found');
+          }
+          throw new Error('Insufficient available credits to freeze');
+        }
 
-      if (availableBalance < amount) {
-        throw new Error('Insufficient available credits to freeze');
-      }
+        const updatedAccount = updated[0];
 
-      const newFrozenBalance = currentAccount.frozenBalance + amount;
+        // Create transaction record
+        const transaction = await tx
+          .insert(creditTransactions)
+          .values({
+            id: crypto.randomUUID(),
+            userId,
+            type: 'freeze',
+            amount,
+            balanceAfter: updatedAccount.balance, // Balance doesn't change, only frozen amount
+            source: 'admin',
+            description: description || 'Credits frozen',
+            referenceId,
+          })
+          .returning();
 
-      // Update frozen balance
-      await db
-        .update(userCredits)
-        .set({
-          frozenBalance: newFrozenBalance,
-          updatedAt: new Date(),
-        })
-        .where(eq(userCredits.userId, userId));
-
-      // Create transaction record
-      const transaction = await db.insert(creditTransactions).values({
-        id: crypto.randomUUID(),
-        userId,
-        type: 'freeze',
-        amount,
-        balanceAfter: currentAccount.balance, // Balance doesn't change, only frozen amount
-        source: 'admin',
-        description: description || 'Credits frozen',
-        referenceId,
-      }).returning();
-
-      return transaction[0] as CreditTransaction;
+        return transaction[0] as CreditTransaction;
+      });
     } catch (error) {
       throw new DatabaseError(`Failed to freeze credits: ${error}`);
     }
@@ -378,10 +401,11 @@ export class CreditService {
 
   /**
    * Unfreeze credits
+   * Uses database transaction + atomic SQL WHERE condition.
    */
   async unfreezeCredits(
-    userId: string, 
-    amount: number, 
+    userId: string,
+    amount: number,
     description?: string,
     referenceId?: string
   ): Promise<CreditTransaction> {
@@ -390,49 +414,54 @@ export class CreditService {
     }
 
     try {
-      const account = await db
-        .select()
-        .from(userCredits)
-        .where(eq(userCredits.userId, userId))
-        .limit(1);
+      return await db.transaction(async (tx) => {
+        // Atomic update with frozen balance check
+        const updated = await tx
+          .update(userCredits)
+          .set({
+            frozenBalance: sql`${userCredits.frozenBalance} - ${amount}`,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(userCredits.userId, userId),
+              sql`${userCredits.frozenBalance} >= ${amount}`
+            )
+          )
+          .returning();
 
-      if (account.length === 0) {
-        throw new Error('Credit account not found');
-      }
+        if (updated.length === 0 || !updated[0]) {
+          const account = await tx
+            .select()
+            .from(userCredits)
+            .where(eq(userCredits.userId, userId))
+            .limit(1);
 
-      const currentAccount = account[0];
-      if (!currentAccount) {
-        throw new Error('Credit account not found');
-      }
+          if (account.length === 0) {
+            throw new Error('Credit account not found');
+          }
+          throw new Error('Cannot unfreeze more credits than are frozen');
+        }
 
-      if (currentAccount.frozenBalance < amount) {
-        throw new Error('Cannot unfreeze more credits than are frozen');
-      }
+        const updatedAccount = updated[0];
 
-      const newFrozenBalance = currentAccount.frozenBalance - amount;
+        // Create transaction record
+        const transaction = await tx
+          .insert(creditTransactions)
+          .values({
+            id: crypto.randomUUID(),
+            userId,
+            type: 'unfreeze',
+            amount,
+            balanceAfter: updatedAccount.balance, // Balance doesn't change, only frozen amount
+            source: 'admin',
+            description: description || 'Credits unfrozen',
+            referenceId,
+          })
+          .returning();
 
-      // Update frozen balance
-      await db
-        .update(userCredits)
-        .set({
-          frozenBalance: newFrozenBalance,
-          updatedAt: new Date(),
-        })
-        .where(eq(userCredits.userId, userId));
-
-      // Create transaction record
-      const transaction = await db.insert(creditTransactions).values({
-        id: crypto.randomUUID(),
-        userId,
-        type: 'unfreeze',
-        amount,
-        balanceAfter: currentAccount.balance, // Balance doesn't change, only frozen amount
-        source: 'admin',
-        description: description || 'Credits unfrozen',
-        referenceId,
-      }).returning();
-
-      return transaction[0] as CreditTransaction;
+        return transaction[0] as CreditTransaction;
+      });
     } catch (error) {
       throw new DatabaseError(`Failed to unfreeze credits: ${error}`);
     }

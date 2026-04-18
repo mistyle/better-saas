@@ -1,17 +1,13 @@
 'use client';
 
-import type { FileInfo } from '@/lib/files/file-service';
-import { 
-  uploadFileAction, 
-  deleteFileAction, 
-  getFileListAction,
-  type FileListResponse 
-} from '@/server/actions/file-actions';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
-import { ErrorLogger } from '@/lib/logger/logger-utils';
-
-const filesErrorLogger = new ErrorLogger('use-files');
+import {
+  deleteFileAction,
+  type FileListResponse,
+  getFileListAction,
+  uploadFileAction,
+} from '@/server/actions/file-actions';
 
 interface UseFilesOptions {
   page?: number;
@@ -28,12 +24,7 @@ const fetcher = async (key: string): Promise<FileListResponse> => {
       search: search || '',
     });
   } catch (error) {
-    filesErrorLogger.logError(error as Error, {
-      operation: 'fetchFiles',
-      page: Number(page),
-      limit: Number(limit),
-      search: search || '',
-    });
+    console.error('[use-files] fetchFiles error:', error);
     throw error;
   }
 };

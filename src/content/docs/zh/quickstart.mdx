@@ -102,7 +102,7 @@ pnpm db:push
 
 ### 步骤 5：积分系统配置
 
-应用程序包含灵活的积分系统，用于管理用户配额和 API 使用。根据您的商业模式进行配置：
+应用程序包含灵活的积分系统，用于管理 API 使用。根据您的商业模式进行配置：
 
 #### 配置积分设置
 
@@ -112,24 +112,16 @@ pnpm db:push
 // 启用/禁用积分系统
 export const CREDITS_CONFIG = {
   enabled: true, // 设置为 false 禁用积分系统
-  currency: 'USD',
+  currency: 'credits',
   
-  // API 调用成本
-  apiCosts: {
-    costPerCall: 1, // 每次 API 调用消耗的积分
-    freeQuotaForPaidUsers: 1000, // 付费用户的免费调用次数
-  },
-  
-  // 存储成本
-  storageCosts: {
-    costPerGB: 100, // 每 GB 消耗的积分
-    freeQuotaForPaidUsers: 10, // 付费用户的免费存储空间（GB）
-  },
-  
-  // 免费用户配额
-  freeUserQuotas: {
-    apiCalls: 100, // 免费 API 调用次数
-    storage: 1, // 免费存储空间（GB）
+  // 消耗规则 - 所有用户统一使用积分
+  consumption: {
+    apiCall: {
+      costPerCall: 1, // 每次 API 调用消耗 1 积分
+    },
+    storage: {
+      costPerGBPerMonth: 10, // 每 GB 每月消耗 10 积分
+    },
   },
 };
 ```

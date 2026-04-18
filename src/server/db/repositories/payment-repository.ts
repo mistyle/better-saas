@@ -1,8 +1,8 @@
-import { eq, desc, and, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
+import type { PaymentInterval, PaymentRecord, PaymentStatus, PaymentType } from '@/payment/types';
 import db from '@/server/db';
 import { payment, paymentEvent } from '@/server/db/schema';
-import type { PaymentRecord, PaymentStatus, PaymentType, PaymentInterval } from '@/payment/types';
-import { v4 as uuidv4 } from 'uuid';
 
 export interface CreatePaymentData {
   id?: string;
@@ -43,8 +43,8 @@ export class PaymentRepository {
    * Create payment record
    */
   async create(data: CreatePaymentData): Promise<PaymentRecord> {
-    const paymentId = data.id || uuidv4();
-    
+    const _paymentId = data.id || uuidv4();
+
     const [result] = await db
       .insert(payment)
       .values({
@@ -75,11 +75,7 @@ export class PaymentRepository {
    * Get payment record by ID
    */
   async findById(id: string): Promise<PaymentRecord | null> {
-    const result = await db
-      .select()
-      .from(payment)
-      .where(eq(payment.id, id))
-      .limit(1);
+    const result = await db.select().from(payment).where(eq(payment.id, id)).limit(1);
 
     return result[0] ? this.mapToPaymentRecord(result[0]) : null;
   }
@@ -160,11 +156,7 @@ export class PaymentRepository {
     if (data.trialStart !== undefined) updateData.trialStart = data.trialStart;
     if (data.trialEnd !== undefined) updateData.trialEnd = data.trialEnd;
 
-    const [result] = await db
-      .update(payment)
-      .set(updateData)
-      .where(eq(payment.id, id))
-      .returning();
+    const [result] = await db.update(payment).set(updateData).where(eq(payment.id, id)).returning();
 
     return result ? this.mapToPaymentRecord(result) : null;
   }
@@ -173,9 +165,7 @@ export class PaymentRepository {
    * 删除支付记录
    */
   async delete(id: string): Promise<boolean> {
-    const result = await db
-      .delete(payment)
-      .where(eq(payment.id, id));
+    const result = await db.delete(payment).where(eq(payment.id, id));
 
     return result.rowCount > 0;
   }

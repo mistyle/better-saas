@@ -709,7 +709,7 @@ export function BillingInfo({ subscription }: { subscription: any }) {
 ```tsx
 // src/app/[locale]/dashboard/page.tsx
 import { getTranslations } from 'next-intl/server'
-import { DashboardContent } from '@/components/dashboard/dashboard-content'
+import { DashboardContent } from '@/themes/default/pages/dashboard'
 
 export default async function DashboardPage() {
   const t = await getTranslations('dashboard')
@@ -919,7 +919,7 @@ export const config = {
 // src/components/language-switcher.test.tsx
 import { render, screen } from '@testing-library/react'
 import { NextIntlClientProvider } from 'next-intl'
-import { LanguageSwitcher } from '@/components/widget/language-switcher'
+import { LanguageSwitcher } from '@/themes/default/blocks/language-switcher'
 
 const messages = {
   common: {

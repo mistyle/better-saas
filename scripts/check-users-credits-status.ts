@@ -1,19 +1,19 @@
 import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import { count, eq, sum } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/neon-http';
 import { env } from '../src/env';
-import { user, userCredits, creditTransactions } from '../src/server/db/schema';
+import { creditTransactions, user, userCredits } from '../src/server/db/schema';
 
 // Initialize database connection
 const sql = neon(env.DATABASE_URL);
-const db = drizzle(sql, { 
-  schema: { user, userCredits, creditTransactions } 
+const db = drizzle(sql, {
+  schema: { user, userCredits, creditTransactions },
 });
 
 async function checkUsersCreditStatus() {
   console.log('📊 Checking users credit status...');
-  
+
   try {
     // 1. 获取所有用户及其积分账户信息
     const usersWithCredits = await db
@@ -35,16 +35,16 @@ async function checkUsersCreditStatus() {
 
     console.log('\n📋 User Credit Status (showing first 10 users):');
     console.log('='.repeat(120));
-    
-    let usersWithCreditAccounts = 0;
-    let usersWithoutCreditAccounts = 0;
-    let totalCreditsInSystem = 0;
+
+    let _usersWithCreditAccounts = 0;
+    let _usersWithoutCreditAccounts = 0;
+    let _totalCreditsInSystem = 0;
 
     for (const userData of usersWithCredits) {
       if (userData.creditAccountId) {
-        usersWithCreditAccounts++;
-        totalCreditsInSystem += userData.balance || 0;
-        
+        _usersWithCreditAccounts++;
+        _totalCreditsInSystem += userData.balance || 0;
+
         console.log(`✅ ${userData.userEmail}`);
         console.log(`   User ID: ${userData.userId}`);
         console.log(`   Balance: ${userData.balance} credits`);
@@ -53,7 +53,7 @@ async function checkUsersCreditStatus() {
         console.log(`   Frozen: ${userData.frozenBalance}`);
         console.log(`   User Created: ${userData.userCreatedAt?.toISOString()}`);
         console.log(`   Credit Account Created: ${userData.creditAccountCreatedAt?.toISOString()}`);
-        
+
         // 检查该用户的交易记录
         const transactions = await db
           .select({
@@ -67,18 +67,19 @@ async function checkUsersCreditStatus() {
           .from(creditTransactions)
           .where(eq(creditTransactions.userId, userData.userId))
           .limit(3);
-        
+
         if (transactions.length > 0) {
           console.log('   Recent Transactions:');
           for (const tx of transactions) {
-            console.log(`     - ${tx.type}: ${tx.amount} (${tx.source}) - ${tx.description} [${tx.createdAt.toISOString()}]`);
+            console.log(
+              `     - ${tx.type}: ${tx.amount} (${tx.source}) - ${tx.description} [${tx.createdAt.toISOString()}]`
+            );
           }
         } else {
           console.log('   No transactions found');
         }
-        
       } else {
-        usersWithoutCreditAccounts++;
+        _usersWithoutCreditAccounts++;
         console.log(`❌ ${userData.userEmail} - No credit account`);
         console.log(`   User ID: ${userData.userId}`);
         console.log(`   User Created: ${userData.userCreatedAt?.toISOString()}`);
@@ -90,7 +91,9 @@ async function checkUsersCreditStatus() {
     const totalUsersResult = await db.select({ count: count() }).from(user);
     const totalCreditAccountsResult = await db.select({ count: count() }).from(userCredits);
     const totalTransactionsResult = await db.select({ count: count() }).from(creditTransactions);
-    const totalCreditsSumResult = await db.select({ sum: sum(userCredits.balance) }).from(userCredits);
+    const totalCreditsSumResult = await db
+      .select({ sum: sum(userCredits.balance) })
+      .from(userCredits);
 
     const totalUsers = totalUsersResult[0].count;
     const totalCreditAccounts = totalCreditAccountsResult[0].count;
@@ -109,7 +112,9 @@ async function checkUsersCreditStatus() {
     if (totalCreditAccounts < totalUsers) {
       console.log(`\n⚠️  ${totalUsers - totalCreditAccounts} users still need credit accounts!`);
     } else if (totalCredits === 0) {
-      console.log('\n⚠️  All users have credit accounts but no credits! Consider running signup bonus script.');
+      console.log(
+        '\n⚠️  All users have credit accounts but no credits! Consider running signup bonus script.'
+      );
     } else {
       console.log('\n✅ All users have credit accounts with credits!');
     }
@@ -121,7 +126,6 @@ async function checkUsersCreditStatus() {
       totalTransactions,
       totalCredits,
     };
-
   } catch (error) {
     console.error('❌ Failed to check credit status:', error);
     return {

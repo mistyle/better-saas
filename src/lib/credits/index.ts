@@ -1,2 +1,2 @@
-export * from './credit-service';
 export { creditsConfig } from '@/config/credits.config';
+export * from './credit-service';

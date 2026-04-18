@@ -22,6 +22,34 @@
       "when": 1755487929062,
       "tag": "0002_strong_shinko_yamashiro",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770372193512,
+      "tag": "0003_calm_punisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770383727603,
+      "tag": "0004_far_titania",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770392763424,
+      "tag": "0005_drop_user_quota_usage",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770419463133,
+      "tag": "0006_marvelous_nomad",
+      "breakpoints": true
     }
   ]
 }

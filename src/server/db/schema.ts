@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, text, timestamp, unique } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -18,6 +18,7 @@ export const user = pgTable('user', {
   banned: boolean('banned'),
   banReason: text('ban_reason'),
   banExpires: timestamp('ban_expires'),
+  stripeCustomerId: text('stripe_customer_id'),
 });
 
 export const session = pgTable('session', {
@@ -138,58 +139,95 @@ export const userCredits = pgTable('user_credits', {
     .notNull(),
 });
 
-export const creditTransactions = pgTable('credit_transactions', {
-  id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  type: text('type', { 
-    enum: ['earn', 'spend', 'refund', 'admin_adjust', 'freeze', 'unfreeze'] 
-  }).notNull(),
-  amount: integer('amount').notNull(),
-  balanceAfter: integer('balance_after').notNull(),
-  source: text('source', { 
-    enum: ['subscription', 'api_call', 'admin', 'storage', 'bonus'] 
-  }).notNull(),
-  description: text('description'),
-  referenceId: text('reference_id'),
-  metadata: text('metadata'), // JSON string
-  createdAt: timestamp('created_at')
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
-}, (table) => ({
-  // Ensure idempotency: prevent duplicate non-null referenceId per user
-  userReferenceUnique: {
-    name: 'credit_user_reference_unique',
-    columns: [table.userId, table.referenceId],
-    unique: true,
+export const creditTransactions = pgTable(
+  'credit_transactions',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    type: text('type', {
+      enum: ['earn', 'spend', 'refund', 'admin_adjust', 'freeze', 'unfreeze'],
+    }).notNull(),
+    amount: integer('amount').notNull(),
+    balanceAfter: integer('balance_after').notNull(),
+    source: text('source', {
+      enum: ['subscription', 'api_call', 'admin', 'storage', 'bonus'],
+    }).notNull(),
+    description: text('description'),
+    referenceId: text('reference_id'),
+    metadata: text('metadata'), // JSON string
+    createdAt: timestamp('created_at')
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
   },
-}));
+  (table) => ({
+    // Ensure idempotency: prevent duplicate non-null referenceId per user
+    userReferenceUnique: {
+      name: 'credit_user_reference_unique',
+      columns: [table.userId, table.referenceId],
+      unique: true,
+    },
+  })
+);
 
-export const userQuotaUsage = pgTable('user_quota_usage', {
-  id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  service: text('service', { 
-    enum: ['api_call', 'storage', 'custom'] 
-  }).notNull(),
-  period: text('period').notNull(), // Format: YYYY-MM
-  usedAmount: integer('used_amount').notNull().default(0),
-  createdAt: timestamp('created_at')
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
-  updatedAt: timestamp('updated_at')
-    .$defaultFn(() => /* @__PURE__ */ new Date())
-    .notNull(),
-}, (table) => ({
-  // Composite unique index for user, service, and period
-  userServicePeriodIdx: { 
-    name: 'user_service_period_idx', 
-    columns: [table.userId, table.service, table.period], 
-    unique: true 
+// Blog category table
+export const blogCategory = pgTable(
+  'blog_category',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    slug: text('slug').notNull(),
+    description: text('description'),
+    locale: text('locale').notNull().default('zh'),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at')
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    updatedAt: timestamp('updated_at')
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
   },
-}));
+  (table) => ({
+    slugLocaleUnique: unique('blog_category_slug_locale_unique').on(table.slug, table.locale),
+  })
+);
+
+// Blog post table
+export const blogPost = pgTable(
+  'blog_post',
+  {
+    id: text('id').primaryKey(),
+    slug: text('slug').notNull(),
+    locale: text('locale').notNull().default('zh'),
+    title: text('title').notNull(),
+    description: text('description'),
+    content: text('content'), // Tiptap JSON
+    htmlContent: text('html_content'), // Pre-rendered HTML
+    coverImage: text('cover_image'),
+    author: text('author'),
+    tags: text('tags'), // JSON array string
+    categoryId: text('category_id').references(() => blogCategory.id, { onDelete: 'set null' }),
+    status: text('status', {
+      enum: ['draft', 'published', 'archived'],
+    })
+      .notNull()
+      .default('draft'),
+    publishedAt: timestamp('published_at'),
+    authorId: text('author_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at')
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    updatedAt: timestamp('updated_at')
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => ({
+    slugLocaleUnique: unique('blog_post_slug_locale_unique').on(table.slug, table.locale),
+  })
+);
 
 export const apiKey = pgTable('api_key', {
   id: text('id').primaryKey(),

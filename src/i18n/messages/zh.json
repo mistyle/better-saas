@@ -41,6 +41,10 @@
     "error": "认证错误",
     "accessDenied": "访问受限",
     "loginRequired": "请登录后访问此页面",
+    "adminRequired": "需要管理员权限",
+    "adminRequiredDescription": "此页面仅限管理员访问。如果您认为这是错误，请联系系统管理员。",
+    "goBack": "返回",
+    "goHome": "返回首页",
     "goToLogin": "前往登录",
     "retry": "重试",
     "refreshSession": "刷新会话",
@@ -197,22 +201,23 @@
     "settings": "设置",
     "profile": "个人资料",
     "billing": "账单",
-    "services":"服务",
+    "services": "服务",
     "security": "安全",
     "credits": "积分",
     "balance": "余款",
     "history": "历史",
-    "apiKeys": "API密钥"
+    "apiKeys": "API密钥",
+    "blog": "博客管理",
+    "blogCategories": "分类管理"
   },
   "navbar": {
     "logo": {
-      "title": "Suit Photo",
+      "title": "Better-SaaS",
       "alt": "logo"
     },
     "menu": {
       "blog": "博客",
       "document": "文档",
-      "components": "组件",
       "pricing": "定价",
       "resources": "资源",
       "helpCenter": "帮助中心",
@@ -286,35 +291,35 @@
       "placeholder": "输入您的邮箱地址"
     }
   },
-  "billing":{
-    "title":"账单",
-    "description":"管理您的订阅和付款历史",
-    "current_plan":"当前计划",
-    "current_no_plan":"没有计划",
-    "goto_plan":"您可以在定价页面选择适合的订阅计划",
-    "current_payment":"付款历史",
-    "all_payment_history":"所有付款记录",
-    "no_payment_history":"暂无付款记录",
-    "get_billing_info_failed":"获取账单信息失败",
-    "no_subscription_info":"没有找到订阅信息",
-    "sync_subscription_success":"订阅信息同步成功",
-    "sync_subscription_failed":"订阅信息同步失败",
-    "payment_success_active":"付款成功！您的订阅已激活。",
-    "payment_success_canceled":"付款取消。您可以随时重新订阅。",
-    "unknow":"未知",
-    "active":"活跃",
-    "trial":"试用中",
-    "past_due":"逾期",
-    "canceled":"已取消",
-    "incomplete":"未完成",
-    "syncing":"同步中...",
-    "sync_subscription_info":"同步订阅信息",
-    "subscription":"订阅",
-    "one_time_payment":"一次性付款",
-    "month_payment":"月付",
-    "year_payment":"年付",
-    "billing_cycle":"计费周期",
-    "price_id":"价格ID"
+  "billing": {
+    "title": "账单",
+    "description": "管理您的订阅和付款历史",
+    "current_plan": "当前计划",
+    "current_no_plan": "没有计划",
+    "goto_plan": "您可以在定价页面选择适合的订阅计划",
+    "current_payment": "付款历史",
+    "all_payment_history": "所有付款记录",
+    "no_payment_history": "暂无付款记录",
+    "get_billing_info_failed": "获取账单信息失败",
+    "no_subscription_info": "没有找到订阅信息",
+    "sync_subscription_success": "订阅信息同步成功",
+    "sync_subscription_failed": "订阅信息同步失败",
+    "payment_success_active": "付款成功！您的订阅已激活。",
+    "payment_success_canceled": "付款取消。您可以随时重新订阅。",
+    "unknow": "未知",
+    "active": "活跃",
+    "trial": "试用中",
+    "past_due": "逾期",
+    "canceled": "已取消",
+    "incomplete": "未完成",
+    "syncing": "同步中...",
+    "sync_subscription_info": "同步订阅信息",
+    "subscription": "订阅",
+    "one_time_payment": "一次性付款",
+    "month_payment": "月付",
+    "year_payment": "年付",
+    "billing_cycle": "计费周期",
+    "price_id": "价格ID"
   },
   "security": {
     "title": "安全",
@@ -343,7 +348,8 @@
     "backToBlog": "返回博客",
     "author": "作者",
     "publishedOn": "发布于",
-    "tags": "标签"
+    "tags": "标签",
+    "allCategories": "全部"
   },
   "legal": {
     "terms": {
@@ -416,11 +422,5 @@
         "content": "如果您对此隐私政策有任何疑问，请联系我们。"
       }
     }
-  },
-  "blocks": {
-    "title": "组件库",
-    "description": "探索我们精心设计的组件集合，每个组件都经过优化，可直接在您的项目中使用",
-    "viewComponents": "查看组件",
-    "backToBlocks": "返回组件库"
   }
 }

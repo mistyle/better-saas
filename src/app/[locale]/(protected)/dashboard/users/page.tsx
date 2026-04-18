@@ -1,34 +1,26 @@
 'use client';
 
-import { AdminGuard } from '@/components/admin-guard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserList } from '@/components/dashboard/user-list';
-import { getUserStats, type UserStats } from '@/server/actions/user-actions';
+import { CreditCard, UserCheck, UserPlus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { Users, UserCheck, UserPlus, CreditCard } from 'lucide-react';
+import { AdminGuard } from '@/components/route-guard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUserStats } from '@/hooks/use-users';
+import { themeBlock } from '@/themes/client-loader';
+
+const UserList = themeBlock('user-list', 'UserList');
 
 export default function UsersPage() {
   const t = useTranslations('sidebar');
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { stats, error, isLoading: loading } = useUserStats();
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const result = await getUserStats();
-        setStats(result);
-      } catch (error) {
-        console.error('Error fetching user stats:', error);
-        toast.error('获取用户统计失败');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
+    if (error) {
+      console.error('Error fetching user stats:', error);
+      toast.error('获取用户统计失败');
+    }
+  }, [error]);
 
   const formatNumber = (num: number) => {
     return num.toLocaleString('zh-CN');
@@ -51,7 +43,7 @@ export default function UsersPage() {
             <CardContent>
               {loading ? (
                 <div className="space-y-2">
-                  <div className='h-8 w-16 animate-pulse rounded bg-gray-200' />
+                  <div className="h-8 w-16 animate-pulse rounded bg-gray-200" />
                 </div>
               ) : (
                 <div className="font-bold text-2xl">{formatNumber(stats?.totalUsers || 0)}</div>
@@ -67,7 +59,7 @@ export default function UsersPage() {
             <CardContent>
               {loading ? (
                 <div className="space-y-2">
-                  <div className='h-8 w-16 animate-pulse rounded bg-gray-200' />
+                  <div className="h-8 w-16 animate-pulse rounded bg-gray-200" />
                 </div>
               ) : (
                 <div className="font-bold text-2xl">{formatNumber(stats?.activeUsers || 0)}</div>
@@ -83,7 +75,7 @@ export default function UsersPage() {
             <CardContent>
               {loading ? (
                 <div className="space-y-2">
-                  <div className='h-8 w-16 animate-pulse rounded bg-gray-200' />
+                  <div className="h-8 w-16 animate-pulse rounded bg-gray-200" />
                 </div>
               ) : (
                 <div className="font-bold text-2xl">{formatNumber(stats?.newUsers || 0)}</div>
@@ -100,7 +92,7 @@ export default function UsersPage() {
             <CardContent>
               {loading ? (
                 <div className="space-y-2">
-                  <div className='h-8 w-16 animate-pulse rounded bg-gray-200' />
+                  <div className="h-8 w-16 animate-pulse rounded bg-gray-200" />
                 </div>
               ) : (
                 <div className="font-bold text-2xl">{formatNumber(stats?.paidUsers || 0)}</div>

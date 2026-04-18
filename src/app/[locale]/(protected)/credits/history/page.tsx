@@ -1,8 +1,9 @@
 import { Suspense } from 'react';
-import { CreditHistoryPage } from '@/components/credits/credit-history-page';
-import { CreditsPageSkeleton } from '@/components/credits/credits-skeleton';
+import { getThemeBlock, getThemePage } from '@/themes';
 
-export default function CreditHistoryPageRoute() {
+export default async function CreditHistoryPageRoute() {
+  const { CreditHistoryPage } = await getThemePage('credit-history');
+  const { CreditsPageSkeleton } = await getThemeBlock('credits-skeleton');
   return (
     <Suspense fallback={<CreditsPageSkeleton />}>
       <CreditHistoryPage />

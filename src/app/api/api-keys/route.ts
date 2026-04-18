@@ -1,10 +1,10 @@
+import bcrypt from 'bcryptjs';
+import { eq } from 'drizzle-orm';
+import { type NextRequest, NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 import { auth } from '@/lib/auth/auth';
 import db from '@/server/db';
 import { apiKey } from '@/server/db/schema';
-import { eq, type InferSelectModel } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcryptjs';
 
 // GET /api/api-keys - 获取用户的API Key列表
 export async function GET(request: NextRequest) {
@@ -14,10 +14,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userApiKeys = await db
@@ -34,10 +31,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ apiKeys: userApiKeys });
   } catch (error) {
     console.error('Error fetching API keys:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -49,20 +43,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
     const { name, expiresAt } = body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Name is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
     // 生成API Key
@@ -73,7 +61,7 @@ export async function POST(request: NextRequest) {
     console.log('Creating API key for user:', session.user.id);
     console.log('API key value:', keyValue);
     console.log('Hashed key starts with:', hashedKey.substring(0, 10));
-    
+
     const [newApiKey] = await db
       .insert(apiKey)
       .values({
@@ -89,7 +77,7 @@ export async function POST(request: NextRequest) {
         expiresAt: apiKey.expiresAt,
         createdAt: apiKey.createdAt,
       });
-      
+
     console.log('API key created successfully:', newApiKey?.id);
 
     return NextResponse.json({
@@ -98,9 +86,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating API key:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
