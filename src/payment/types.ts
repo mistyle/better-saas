@@ -1,5 +1,8 @@
 import type { Stripe as StripeTypes } from 'stripe';
 
+// Payment provider name type
+export type PaymentProviderName = 'stripe' | 'creem';
+
 // Payment type
 export type PaymentType = 'one_time' | 'subscription';
 
@@ -117,8 +120,12 @@ export interface PaymentRecord {
 
 // 支付提供商接口
 export interface PaymentProvider {
+  /** Provider identifier */
+  readonly provider: PaymentProviderName;
+
   createPayment(params: CreatePaymentParams): Promise<PaymentResult>;
   createSubscription(params: CreateSubscriptionParams): Promise<SubscriptionResult>;
+  createSubscriptionCheckout(params: CreateSubscriptionCheckoutParams): Promise<PaymentResult>;
   updateSubscription(
     subscriptionId: string,
     params: UpdateSubscriptionParams

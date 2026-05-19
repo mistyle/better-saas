@@ -4,6 +4,7 @@ import type {
   CreateSubscriptionCheckoutParams,
   CreateSubscriptionParams,
   PaymentProvider,
+  PaymentProviderName,
   PaymentResult,
   PaymentStatus,
   SubscriptionResult,
@@ -13,6 +14,7 @@ import type { SubscriptionWithPeriod } from '@/types/stripe-extended';
 import { stripe, stripeConfig } from './client';
 
 export class StripeProvider implements PaymentProvider {
+  public readonly provider: PaymentProviderName = 'stripe';
   /**
    * Create customer
    */

@@ -19,6 +19,7 @@ export const user = pgTable('user', {
   banReason: text('ban_reason'),
   banExpires: timestamp('ban_expires'),
   stripeCustomerId: text('stripe_customer_id'),
+  paymentProvider: text('payment_provider'), // 'stripe' | 'creem'
 });
 
 export const session = pgTable('session', {
@@ -88,6 +89,7 @@ export const payment = pgTable('payment', {
   priceId: text('price_id').notNull(),
   type: text('type').notNull(),
   interval: text('interval'),
+  provider: text('provider').notNull().default('stripe'), // 'stripe' | 'creem'
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
@@ -113,7 +115,7 @@ export const paymentEvent = pgTable('payment_event', {
     .notNull()
     .references(() => payment.id, { onDelete: 'cascade' }),
   eventType: text('event_type').notNull(),
-  stripeEventId: text('stripe_event_id').unique(),
+  providerEventId: text('provider_event_id').unique(), // Stripe event ID or Creem event ID
   eventData: text('event_data'), // JSON string
   createdAt: timestamp('created_at')
     .$defaultFn(() => /* @__PURE__ */ new Date())

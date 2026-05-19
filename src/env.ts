@@ -22,6 +22,12 @@ export const env = createEnv({
     // Stripe
     STRIPE_SECRET_KEY: z.string(),
     STRIPE_WEBHOOK_SECRET: z.string(),
+    // Creem
+    CREEM_API_KEY: z.string().optional().default(''),
+    CREEM_WEBHOOK_SECRET: z.string().optional().default(''),
+    CREEM_API_BASE_URL: z.string().optional().default('https://api.creem.io/v1'),
+    // Payment provider selection
+    PAYMENT_PROVIDER: z.enum(['stripe', 'creem']).optional().default('stripe'),
     // Admin Configuration
     ADMIN_EMAILS: z.string().optional().default(''),
   },
@@ -56,6 +62,12 @@ export const env = createEnv({
     // Stripe
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    // Creem
+    CREEM_API_KEY: process.env.CREEM_API_KEY,
+    CREEM_WEBHOOK_SECRET: process.env.CREEM_WEBHOOK_SECRET,
+    CREEM_API_BASE_URL: process.env.CREEM_API_BASE_URL,
+    // Payment provider selection
+    PAYMENT_PROVIDER: process.env.PAYMENT_PROVIDER,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     // Admin Configuration
     ADMIN_EMAILS: process.env.ADMIN_EMAILS,
