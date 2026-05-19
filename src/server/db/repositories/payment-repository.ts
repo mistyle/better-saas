@@ -9,6 +9,7 @@ export interface CreatePaymentData {
   priceId: string;
   type: PaymentType;
   interval?: PaymentInterval;
+  provider?: string; // 'stripe' | 'creem'
   userId: string;
   customerId: string;
   subscriptionId?: string;
@@ -34,7 +35,7 @@ export interface UpdatePaymentData {
 export interface CreatePaymentEventData {
   paymentId: string;
   eventType: string;
-  stripeEventId?: string;
+  providerEventId?: string;
   eventData?: string;
 }
 
@@ -52,6 +53,7 @@ export class PaymentRepository {
         priceId: data.priceId,
         type: data.type,
         interval: data.interval || null,
+        provider: data.provider || 'stripe',
         userId: data.userId,
         customerId: data.customerId,
         subscriptionId: data.subscriptionId || null,
@@ -178,7 +180,7 @@ export class PaymentRepository {
       id: uuidv4(),
       paymentId: data.paymentId,
       eventType: data.eventType,
-      stripeEventId: data.stripeEventId || null,
+      providerEventId: data.providerEventId || null,
       eventData: data.eventData || null,
     });
   }
@@ -186,11 +188,11 @@ export class PaymentRepository {
   /**
    * 检查 Stripe 事件是否已处理
    */
-  async isStripeEventProcessed(stripeEventId: string): Promise<boolean> {
+  async isProviderEventProcessed(providerEventId: string): Promise<boolean> {
     const result = await db
       .select()
       .from(paymentEvent)
-      .where(eq(paymentEvent.stripeEventId, stripeEventId))
+      .where(eq(paymentEvent.providerEventId, providerEventId))
       .limit(1);
 
     return result.length > 0;

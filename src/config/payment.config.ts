@@ -1,8 +1,9 @@
 import type { PaymentConfig } from '@/types';
+import type { PaymentProviderName } from '@/payment/types';
 
 export const paymentConfig: PaymentConfig = {
-  // Payment provider
-  provider: 'stripe',
+  // Active payment provider (controlled by env var)
+  provider: (process.env.PAYMENT_PROVIDER as PaymentProviderName) || 'stripe',
 
   // Base currency
   currency: 'usd',
@@ -12,6 +13,13 @@ export const paymentConfig: PaymentConfig = {
     secretKey: process.env.STRIPE_SECRET_KEY || '',
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
     apiVersion: '2025-06-30.basil',
+  },
+
+  // Creem configuration
+  creem: {
+    apiKey: process.env.CREEM_API_KEY || '',
+    webhookSecret: process.env.CREEM_WEBHOOK_SECRET || '',
+    baseUrl: process.env.CREEM_API_BASE_URL || 'https://api.creem.io/v1',
   },
 
   // Subscription plans
@@ -51,6 +59,10 @@ export const paymentConfig: PaymentConfig = {
         monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MONTHLY || 'price_pro_monthly',
         yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_YEARLY || 'price_pro_yearly',
       },
+      creemProductIds: {
+        monthly: process.env.NEXT_PUBLIC_CREEM_PRODUCT_PRO_MONTHLY || '',
+        yearly: process.env.NEXT_PUBLIC_CREEM_PRODUCT_PRO_YEARLY || '',
+      },
       credits: {
         monthly: 1000, // 每月积分
         yearly: 12000, // 年付积分（多送2个月）
@@ -84,6 +96,10 @@ export const paymentConfig: PaymentConfig = {
         monthly:
           process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE_MONTHLY || 'price_enterprise_monthly',
         yearly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE_YEARLY || 'price_enterprise_yearly',
+      },
+      creemProductIds: {
+        monthly: process.env.NEXT_PUBLIC_CREEM_PRODUCT_ENTERPRISE_MONTHLY || '',
+        yearly: process.env.NEXT_PUBLIC_CREEM_PRODUCT_ENTERPRISE_YEARLY || '',
       },
       credits: {
         monthly: 5000, // 每月积分

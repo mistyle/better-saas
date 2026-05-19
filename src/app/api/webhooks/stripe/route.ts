@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
     const event = stripeProvider.constructWebhookEvent(body, signature);
 
     // check if the event has been processed (avoid duplicate processing)
-    const isProcessed = await paymentRepository.isStripeEventProcessed(event.id);
+    const isProcessed = await paymentRepository.isProviderEventProcessed(event.id);
     if (isProcessed) {
       console.log(`[stripe-webhook] Event ${event.id} already processed`);
       return NextResponse.json({ received: true });
@@ -335,7 +335,7 @@ async function handleCheckoutSessionCompleted(event: StripeTypes.Event) {
       await paymentRepository.createEvent({
         paymentId: subscriptionId,
         eventType: 'checkout.session.completed',
-        stripeEventId: event.id,
+        providerEventId: event.id,
         eventData: JSON.stringify(session),
       });
 
@@ -398,7 +398,7 @@ async function handleCheckoutSessionCompleted(event: StripeTypes.Event) {
       await paymentRepository.createEvent({
         paymentId: paymentIntentId as string,
         eventType: 'checkout.session.completed',
-        stripeEventId: event.id,
+        providerEventId: event.id,
         eventData: JSON.stringify(session),
       });
 
@@ -441,7 +441,7 @@ async function handleSubscriptionCreated(event: StripeTypes.Event) {
     await paymentRepository.createEvent({
       paymentId: paymentRecord.id,
       eventType: 'customer.subscription.created',
-      stripeEventId: event.id,
+      providerEventId: event.id,
       eventData: JSON.stringify(subscription),
     });
 
@@ -491,7 +491,7 @@ async function handleSubscriptionUpdated(event: StripeTypes.Event) {
     await paymentRepository.createEvent({
       paymentId: paymentRecord.id,
       eventType: 'customer.subscription.updated',
-      stripeEventId: event.id,
+      providerEventId: event.id,
       eventData: JSON.stringify(subscription),
     });
 
@@ -521,7 +521,7 @@ async function handleSubscriptionDeleted(event: StripeTypes.Event) {
     await paymentRepository.createEvent({
       paymentId: paymentRecord.id,
       eventType: 'customer.subscription.deleted',
-      stripeEventId: event.id,
+      providerEventId: event.id,
       eventData: JSON.stringify(subscription),
     });
 
@@ -545,7 +545,7 @@ async function handleInvoicePaymentSucceeded(event: StripeTypes.Event) {
         await paymentRepository.createEvent({
           paymentId: paymentRecord.id,
           eventType: 'invoice.payment_succeeded',
-          stripeEventId: event.id,
+          providerEventId: event.id,
           eventData: JSON.stringify(invoice),
         });
 
@@ -571,7 +571,7 @@ async function handleInvoicePaymentFailed(event: StripeTypes.Event) {
         await paymentRepository.createEvent({
           paymentId: paymentRecord.id,
           eventType: 'invoice.payment_failed',
-          stripeEventId: event.id,
+          providerEventId: event.id,
           eventData: JSON.stringify(invoice),
         });
 
@@ -597,7 +597,7 @@ async function handleInvoicePaid(event: StripeTypes.Event) {
         await paymentRepository.createEvent({
           paymentId: paymentRecord.id,
           eventType: 'invoice.paid',
-          stripeEventId: event.id,
+          providerEventId: event.id,
           eventData: JSON.stringify(invoice),
         });
 

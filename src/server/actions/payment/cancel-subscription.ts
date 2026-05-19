@@ -1,7 +1,7 @@
 'use server';
 
 import { getServerSession } from '@/lib/auth/server-session';
-import { StripeProvider } from '@/payment/stripe/provider';
+import { getPaymentProvider } from '@/payment/service';
 import type { ActionResult } from '@/payment/types';
 import { paymentRepository } from '@/server/db/repositories/payment-repository';
 
@@ -28,10 +28,10 @@ export async function cancelSubscription(
       };
     }
 
-    const stripeProvider = new StripeProvider();
+    const provider = getPaymentProvider();
 
-    // Cancel Stripe subscription
-    const canceled = await stripeProvider.cancelSubscription(subscriptionId);
+    // Cancel subscription via active provider
+    const canceled = await provider.cancelSubscription(subscriptionId);
     if (!canceled) {
       return {
         success: false,
