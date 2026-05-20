@@ -1,3 +1,4 @@
+import { useMessages } from 'next-intl';
 import {
   IconAdjustmentsBolt,
   IconCloud,
@@ -10,50 +11,28 @@ import {
 } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 
+interface TranslationFeatureItem {
+  title: string;
+  description: string;
+}
+
 export function Features() {
-  const features = [
-    {
-      title: 'Authentication',
-      description: 'Full authentication flow with password and OAuth.',
-      icon: <IconTerminal2 />,
-    },
-    {
-      title: 'Database',
-      description: 'Access your data in a type-safe way with Drizzle ORM.',
-      icon: <IconEaseInOut />,
-    },
-    {
-      title: 'Saas Blog',
-      description: 'Multi-language, MDX-based blog to write about your product.',
-      icon: <IconCurrencyDollar />,
-    },
-    {
-      title: 'SaaS Documentation',
-      description:
-        'Multi-language, MDX-based documentation to help your users get started with your product.',
-      icon: <IconCloud />,
-    },
-    {
-      title: 'Payments',
-      description: 'Manage your billing and subscriptions with Stripe',
-      icon: <IconRouteAltLeft />,
-    },
-    {
-      title: 'Internationalization',
-      description: 'Reach more customers by making your app multilingual.',
-      icon: <IconHelp />,
-    },
-    {
-      title: 'Admin Dashboard',
-      description: 'Manage or Disable your user accounts within Admin dashboard.',
-      icon: <IconAdjustmentsBolt />,
-    },
-    {
-      title: 'SEO Friendly',
-      description: 'The Better-SaaS is SEO-Ready out of the box, no extra work required',
-      icon: <IconHeart />,
-    },
+  const messages = useMessages() as { features?: { items?: TranslationFeatureItem[] } };
+  const icons = [
+    <IconTerminal2 key="authentication" />,
+    <IconEaseInOut key="database" />,
+    <IconCurrencyDollar key="blog" />,
+    <IconCloud key="docs" />,
+    <IconRouteAltLeft key="payments" />,
+    <IconHelp key="i18n" />,
+    <IconAdjustmentsBolt key="admin" />,
+    <IconHeart key="seo" />,
   ];
+  const features = (messages.features?.items || []).map((feature, index) => ({
+    ...feature,
+    icon: icons[index],
+  }));
+
   return (
     <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 py-10 md:grid-cols-2 lg:grid-cols-4">
       {features.map((feature, index) => (

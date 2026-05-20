@@ -58,6 +58,7 @@
     "namePlaceholder": "张三",
     "confirmPassword": "确认密码",
     "passwordMismatch": "密码不匹配",
+    "signupFailed": "注册失败",
     "signupWithSocial": "使用您的GitHub或Google账号注册",
     "githubSignUp": "GitHub注册",
     "googleSignUp": "Google注册",
@@ -111,6 +112,7 @@
     "supportedFormats": "仅支持 JPEG 和 PNG 格式的图片，单个文件最大 {maxSize}MB",
     "selectImages": "选择图片",
     "uploadFailed": "文件上传失败",
+    "loadFailed": "加载文件失败",
     "fileTooLarge": "文件过大",
     "invalidFileType": "仅支持 JPEG 和 PNG 格式的图片",
     "tooManyFiles": "文件数量过多",
@@ -124,7 +126,9 @@
     "size": "大小",
     "uploadUser": "上传用户",
     "lastModified": "最后修改",
-    "image": "图片"
+    "image": "图片",
+    "previousPage": "上一页",
+    "nextPage": "下一页"
   },
   "hero": {
     "heading": "终极可扩展的 Next.js SaaS 模板",
@@ -142,6 +146,51 @@
     "processingText": "处理中...",
     "getStartedText": "开始使用",
     "purchaseText": "购买",
+    "free": "免费",
+    "foreverFree": "永久免费",
+    "billedAnnually": "按年计费 {amount}",
+    "billedMonthly": "按月计费 {amount}",
+    "creditsPerYear": "积分/年",
+    "creditsPerMonth": "积分/月",
+    "bonusCredits": "+{count} 奖励积分",
+    "freeCredits": "{count} 免费积分",
+    "everythingInPlus": "包含 Plus 的所有功能，并且：",
+    "priceConfigError": "价格配置错误，请联系客服",
+    "createCheckoutFailed": "创建支付会话失败",
+    "plans": {
+      "free": {
+        "name": "免费版",
+        "description": "适合刚开始使用",
+        "features": ["每月 50 积分", "基础 API 访问", "1GB 存储空间", "基础支持", "社区访问"]
+      },
+      "pro": {
+        "name": "专业版",
+        "description": "适合专业用户",
+        "features": [
+          "每月 1,000 积分",
+          "高级 API 访问",
+          "10GB 存储空间",
+          "优先支持",
+          "高级分析",
+          "自定义集成",
+          "团队协作"
+        ]
+      },
+      "enterprise": {
+        "name": "企业版",
+        "description": "适合大型组织",
+        "features": [
+          "每月 5,000 积分",
+          "企业级 API 访问",
+          "无限存储空间",
+          "7x24 专属支持",
+          "自定义集成",
+          "高级安全",
+          "SLA 保障",
+          "本地化部署"
+        ]
+      }
+    },
     "purchaseDialog": {
       "title": "测试支付提醒",
       "description": "better-saas是开源免费的软件，请使用测试卡号5555555555554444进行支付，切勿真实付款。",
@@ -274,7 +323,10 @@
     "saving": "保存中...",
     "avatar": {
       "title": "您的头像",
-      "description": "要更改您的头像，请点击此块中的图片并从您的计算机中选择一个文件上传。"
+      "description": "要更改您的头像，请点击此块中的图片并从您的计算机中选择一个文件上传。",
+      "requirements": "仅支持 JPEG 和 PNG 格式，最大 10MB。",
+      "invalidType": "仅支持 JPEG 和 PNG 格式的图片",
+      "tooLarge": "文件大小不能超过 10MB"
     },
     "language": {
       "title": "您的语言",
@@ -288,7 +340,8 @@
     "email": {
       "title": "您的邮箱",
       "description": "要更改您的邮箱，请输入新邮箱并点击保存。您需要确认新邮箱才能生效。",
-      "placeholder": "输入您的邮箱地址"
+      "placeholder": "输入您的邮箱地址",
+      "comingSoon": "邮箱更改需要验证，此功能正在开发中。"
     }
   },
   "billing": {
@@ -319,7 +372,25 @@
     "month_payment": "月付",
     "year_payment": "年付",
     "billing_cycle": "计费周期",
-    "price_id": "价格ID"
+    "price_id": "价格ID",
+    "subscriptionCard": {
+      "title": "当前订阅",
+      "description": "您的订阅计划详情",
+      "billingCycle": "计费周期",
+      "currentPeriod": "当前周期",
+      "trialEnd": "试用结束：",
+      "cancelAtPeriodEnd": "将在当前周期结束后取消",
+      "startTime": "订阅开始时间：{date}",
+      "unknown": "未知",
+      "monthly": "月付",
+      "yearly": "年付",
+      "oneTime": "一次性",
+      "missingSubscriptionId": "订阅 ID 不存在",
+      "cancelSuccess": "订阅取消成功",
+      "cancelFailed": "订阅取消失败",
+      "processing": "处理中...",
+      "cancelButton": "取消订阅"
+    }
   },
   "security": {
     "title": "安全",
@@ -335,6 +406,322 @@
       "subtitle": "永久删除您的账户和所有内容",
       "description": "此操作不可逆转，请谨慎操作",
       "button": "删除账户"
+    }
+  },
+  "features": {
+    "items": [
+      {
+        "title": "身份认证",
+        "description": "完整的密码和 OAuth 登录认证流程。"
+      },
+      {
+        "title": "数据库",
+        "description": "使用 Drizzle ORM 以类型安全的方式访问数据。"
+      },
+      {
+        "title": "SaaS 博客",
+        "description": "基于 MDX 的多语言博客，用于发布产品内容。"
+      },
+      {
+        "title": "SaaS 文档",
+        "description": "基于 MDX 的多语言文档，帮助用户快速上手您的产品。"
+      },
+      {
+        "title": "支付",
+        "description": "使用 Stripe 管理账单和订阅。"
+      },
+      {
+        "title": "国际化",
+        "description": "通过多语言支持触达更多客户。"
+      },
+      {
+        "title": "管理后台",
+        "description": "在管理后台管理或禁用用户账户。"
+      },
+      {
+        "title": "SEO 友好",
+        "description": "Better-SaaS 开箱即具备 SEO 基础能力，无需额外配置。"
+      }
+    ]
+  },
+  "pagination": {
+    "previous": "上一页",
+    "next": "下一页",
+    "morePages": "更多页面"
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
+  },
+  "footer": {
+    "description": "一个生产就绪的 SaaS 模板，帮助您更快启动创业项目或副业产品。",
+    "copyright": "© 2025 Better-SaaS。保留所有权利。",
+    "sections": [
+      {
+        "title": "产品",
+        "links": [
+          { "name": "概览", "href": "#" },
+          { "name": "定价", "href": "#" },
+          { "name": "市场", "href": "#" },
+          { "name": "功能", "href": "#" }
+        ]
+      },
+      {
+        "title": "公司",
+        "links": [
+          { "name": "关于我们", "href": "#" },
+          { "name": "团队", "href": "#" },
+          { "name": "博客", "href": "#" },
+          { "name": "招聘", "href": "#" }
+        ]
+      },
+      {
+        "title": "资源",
+        "links": [
+          { "name": "帮助", "href": "#" },
+          { "name": "Github", "href": "https://github.com/justnode/better-saas" },
+          { "name": "广告合作", "href": "#" },
+          { "name": "隐私", "href": "#" }
+        ]
+      }
+    ],
+    "legalLinks": [{ "name": "服务条款", "href": "#" }, { "name": "隐私政策", "href": "#" }]
+  },
+  "docsLayout": {
+    "treeName": "文档",
+    "navTitle": "Better SaaS 文档"
+  },
+  "dashboardUsers": {
+    "description": "管理系统用户和权限",
+    "totalUsers": "总用户数",
+    "activeUsers": "活跃用户",
+    "newUsers": "新注册用户",
+    "last30Days": "最近 30 天",
+    "paidUsers": "付费用户",
+    "notTracked": "暂未统计",
+    "statsError": "获取用户统计失败"
+  },
+  "userList": {
+    "title": "用户列表",
+    "loadError": "获取用户列表失败",
+    "searchPlaceholder": "搜索用户名或邮箱...",
+    "pageSizePrefix": "每页显示",
+    "pageSizeSuffix": "条记录",
+    "user": "用户",
+    "email": "邮箱",
+    "role": "角色",
+    "status": "状态",
+    "createdAt": "注册时间",
+    "unnamed": "未设置姓名",
+    "admin": "管理员",
+    "regularUser": "用户",
+    "verified": "已验证",
+    "unverified": "未验证",
+    "range": "显示 {start} - {end} 条，共 {total} 条记录",
+    "previous": "上一页",
+    "next": "下一页"
+  },
+  "blogAdmin": {
+    "list": {
+      "title": "文章管理",
+      "newPost": "新建文章",
+      "searchPlaceholder": "搜索标题...",
+      "statusFilter": "状态筛选",
+      "categoryFilter": "分类筛选",
+      "allStatuses": "全部状态",
+      "allCategories": "全部分类",
+      "total": "共 {total} 篇文章",
+      "tableTitle": "标题",
+      "category": "分类",
+      "status": "状态",
+      "language": "语言",
+      "author": "作者",
+      "updatedAt": "更新时间",
+      "actions": "操作",
+      "loading": "加载中...",
+      "empty": "暂无文章",
+      "edit": "编辑",
+      "view": "查看",
+      "publish": "发布",
+      "archive": "归档",
+      "delete": "删除",
+      "previous": "上一页",
+      "next": "下一页",
+      "deleteTitle": "确认删除",
+      "deleteDescription": "删除后无法恢复，确定要删除这篇文章吗？",
+      "confirmDelete": "确认删除",
+      "cancel": "取消",
+      "loadError": "加载文章列表失败",
+      "deleteSuccess": "删除成功",
+      "deleteError": "删除失败",
+      "publishSuccess": "发布成功",
+      "publishError": "发布失败",
+      "archiveSuccess": "归档成功",
+      "archiveError": "归档失败"
+    },
+    "statuses": {
+      "draft": "草稿",
+      "published": "已发布",
+      "archived": "已归档"
+    },
+    "editor": {
+      "createTitle": "新建文章",
+      "editTitle": "编辑文章",
+      "cancel": "取消",
+      "saveDraft": "保存草稿",
+      "saving": "保存中...",
+      "publish": "发布",
+      "publishing": "发布中...",
+      "title": "标题 *",
+      "titlePlaceholder": "文章标题",
+      "titleRequired": "标题不能为空",
+      "slugRequired": "Slug 不能为空",
+      "generate": "生成",
+      "language": "语言",
+      "author": "作者",
+      "authorPlaceholder": "作者名称",
+      "description": "描述",
+      "descriptionPlaceholder": "文章描述（SEO）",
+      "coverImage": "封面图片 URL",
+      "category": "分类",
+      "categoryPlaceholder": "选择分类",
+      "noCategory": "无分类",
+      "tags": "标签（逗号分隔）",
+      "content": "内容",
+      "contentPlaceholder": "开始编写文章内容...",
+      "saveSuccess": "保存成功",
+      "saveError": "保存失败",
+      "publishSuccess": "发布成功",
+      "publishError": "发布失败",
+      "loadError": "加载文章失败"
+    },
+    "toolbar": {
+      "undo": "撤销",
+      "redo": "重做",
+      "horizontalRule": "分割线",
+      "uploadImage": "上传图片",
+      "insertLink": "插入链接",
+      "cancel": "取消",
+      "confirm": "确认"
+    },
+    "categories": {
+      "title": "分类管理",
+      "newCategory": "新建分类",
+      "name": "名称",
+      "language": "语言",
+      "sortOrder": "排序",
+      "description": "描述",
+      "actions": "操作",
+      "loading": "加载中...",
+      "empty": "暂无分类，点击“新建分类”创建",
+      "editTitle": "编辑分类",
+      "createTitle": "新建分类",
+      "nameRequired": "名称和 Slug 不能为空",
+      "nameLabel": "名称 *",
+      "namePlaceholder": "分类名称",
+      "generate": "生成",
+      "sortLabel": "排序（数字越小越靠前）",
+      "descriptionPlaceholder": "分类描述（可选）",
+      "cancel": "取消",
+      "save": "保存",
+      "saving": "保存中...",
+      "deleteTitle": "确认删除",
+      "deleteDescription": "删除分类后，已关联该分类的文章将变为“无分类”状态。确定要删除吗？",
+      "confirmDelete": "确认删除",
+      "loadError": "加载分类列表失败",
+      "saveSuccess": "保存成功",
+      "createSuccess": "创建成功",
+      "updateSuccess": "更新成功",
+      "saveError": "保存失败",
+      "deleteSuccess": "删除成功",
+      "deleteError": "删除失败"
+    }
+  },
+  "apiKeys": {
+    "title": "API Keys",
+    "description": "管理您的 API 访问密钥",
+    "fullDescription": "管理您的 API 访问密钥，用于调用外部 API 服务",
+    "loading": "加载中...",
+    "fetchError": "无法获取 API Key 列表",
+    "networkError": "网络错误，请稍后重试",
+    "nameRequired": "请输入 API Key 名称",
+    "createSuccess": "API Key 已创建，请妥善保存",
+    "createError": "创建 API Key 失败",
+    "deleteSuccess": "API Key 已删除",
+    "deleteError": "删除 API Key 失败",
+    "copySuccess": "API Key 已复制到剪贴板",
+    "copyError": "无法复制到剪贴板",
+    "newKeyTitle": "新创建的 API Key",
+    "newKeyDescription": "请立即复制并保存此密钥，它只会显示一次",
+    "savedClose": "我已保存，关闭",
+    "empty": "暂无 API Key",
+    "count": "共 {count} 个 API Key",
+    "createButton": "创建 API Key",
+    "createDialogTitle": "创建新的 API Key",
+    "createDialogDescription": "创建一个新的 API Key 用于访问我们的 API 服务",
+    "name": "名称",
+    "namePlaceholder": "输入 API Key 名称",
+    "expiry": "过期时间（可选）",
+    "cancel": "取消",
+    "creating": "创建中...",
+    "create": "创建",
+    "expired": "已过期",
+    "createdAt": "创建时间：{date}",
+    "expiresAt": "过期时间：{date}",
+    "lastUsedAt": "最后使用：{date}",
+    "deleteTitle": "确认删除",
+    "deleteDescription": "确定要删除 API Key “{name}” 吗？此操作无法撤销。",
+    "delete": "删除"
+  },
+  "credits": {
+    "title": "积分",
+    "description": "管理您的积分并查看使用历史",
+    "upgradeTitle": "需要更多积分？",
+    "upgradeDescription": "升级订阅后，每月可自动获得更多积分。",
+    "viewPlans": "查看套餐",
+    "viewHistory": "查看历史",
+    "recentActivity": "最近活动",
+    "recentDescription": "您的最新积分交易",
+    "historyTitle": "积分历史",
+    "historyDescription": "所有积分交易的完整历史",
+    "export": "导出",
+    "exporting": "导出中...",
+    "allTransactions": "所有交易",
+    "allTransactionsDescription": "积分收入、消耗和调整的完整列表",
+    "balance": {
+      "title": "积分余额",
+      "loadError": "加载积分余额失败",
+      "unable": "无法加载积分信息",
+      "tryAgain": "重试",
+      "available": "可用积分",
+      "ready": "可直接使用",
+      "total": "总余额",
+      "includingFrozen": "包含冻结积分",
+      "frozen": "冻结积分",
+      "temporarilyUnavailable": "暂时不可用",
+      "earned": "累计获得",
+      "allTime": "全部时间",
+      "lifetime": "累计收入"
+    },
+    "history": {
+      "loadError": "加载积分历史失败",
+      "emptyTitle": "暂无交易",
+      "emptyDescription": "开始使用平台后，您的积分交易将显示在这里。",
+      "fallbackDescription": "{type} 积分",
+      "balance": "余额：{balance}",
+      "viewAll": "查看全部交易",
+      "previous": "上一页",
+      "next": "下一页",
+      "page": "第 {page} 页",
+      "sources": {
+        "subscription": "订阅",
+        "api_call": "API 调用",
+        "admin": "管理员",
+        "storage": "存储",
+        "bonus": "奖励"
+      }
     }
   },
   "blog": {

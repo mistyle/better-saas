@@ -9,6 +9,7 @@ import Typography from '@tiptap/extension-typography';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { all, createLowlight } from 'lowlight';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect } from 'react';
 import { BlogEditorToolbar } from './blog-editor-toolbar';
 
@@ -21,6 +22,7 @@ export interface BlogEditorProps {
 }
 
 export function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) {
+  const t = useTranslations('blogAdmin.editor');
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -44,7 +46,7 @@ export function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) 
         lowlight,
       }),
       Placeholder.configure({
-        placeholder: placeholder || '开始编写文章内容...',
+        placeholder: placeholder || t('contentPlaceholder'),
       }),
       Highlight,
       Typography,

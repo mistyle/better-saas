@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Suspense } from 'react';
 import { useLogin } from '@/hooks/use-login';
 import { themeBlock } from '@/themes/client-loader';
@@ -28,13 +29,15 @@ function LoginPageContent() {
 }
 
 export default function LoginPage() {
+  const t = useTranslations('common');
+
   return (
     <Suspense
       fallback={
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
           <div className="flex w-full max-w-sm flex-col items-center gap-6">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-muted-foreground text-sm">加载中...</p>
+            <p className="text-muted-foreground text-sm">{t('loading')}</p>
           </div>
         </div>
       }

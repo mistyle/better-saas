@@ -3,12 +3,7 @@
 import type { User } from 'better-auth/types';
 import { isAdmin } from '@/lib/auth/permissions';
 import { getServerSession } from '@/lib/auth/server-session';
-import {
-  deleteFile,
-  type FileInfo,
-  getFileList,
-  uploadFile,
-} from '@/lib/files/file-service';
+import { deleteFile, type FileInfo, getFileList, uploadFile } from '@/lib/files/file-service';
 import { getErrorMessage } from './error-messages';
 
 export interface FileListResponse {
@@ -29,9 +24,6 @@ export interface FileDeleteResponse {
   success: boolean;
 }
 
-/**
- * 上传文件 Server Action
- */
 export async function uploadFileAction(formData: FormData): Promise<FileUploadResponse> {
   let session: { user?: User } | null = null;
   let file: File | null = null;
@@ -64,9 +56,6 @@ export async function uploadFileAction(formData: FormData): Promise<FileUploadRe
   }
 }
 
-/**
- * 删除文件 Server Action
- */
 export async function deleteFileAction(fileId: string): Promise<FileDeleteResponse> {
   let session: { user?: User } | null = null;
 
@@ -77,10 +66,7 @@ export async function deleteFileAction(fileId: string): Promise<FileDeleteRespon
       throw new Error(await getErrorMessage('unauthorizedAccess'));
     }
 
-    // Check if user is admin - admins can delete any file
     const userIsAdmin = isAdmin(session.user);
-
-    // Pass userId only if user is not admin (to enforce ownership check)
     const success = await deleteFile(fileId, userIsAdmin ? undefined : session.user.id);
 
     if (!success) {
@@ -97,9 +83,6 @@ export async function deleteFileAction(fileId: string): Promise<FileDeleteRespon
   }
 }
 
-/**
- * 获取文件列表 Server Action
- */
 export async function getFileListAction(
   options: { page?: number; limit?: number; search?: string } = {}
 ): Promise<FileListResponse> {
@@ -114,7 +97,6 @@ export async function getFileListAction(
 
     const { page = 1, limit = 20, search = '' } = options;
 
-    // Remove userId parameter to fetch all files instead of just current user's files
     const result = await getFileList({
       page,
       limit,
@@ -130,4 +112,3 @@ export async function getFileListAction(
     throw new Error(errorMessage);
   }
 }
-

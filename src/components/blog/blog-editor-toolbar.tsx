@@ -20,6 +20,7 @@ import {
   Strikethrough,
   Undo,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,6 +40,7 @@ interface BlogEditorToolbarProps {
 }
 
 export function BlogEditorToolbar({ editor, onImageUpload }: BlogEditorToolbarProps) {
+  const t = useTranslations('blogAdmin.toolbar');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -84,14 +86,14 @@ export function BlogEditorToolbar({ editor, onImageUpload }: BlogEditorToolbarPr
         <ToolbarButton
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          tooltip="撤销"
+          tooltip={t('undo')}
         >
           <Undo className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          tooltip="重做"
+          tooltip={t('redo')}
         >
           <Redo className="h-4 w-4" />
         </ToolbarButton>
@@ -197,17 +199,13 @@ export function BlogEditorToolbar({ editor, onImageUpload }: BlogEditorToolbarPr
         {/* Horizontal rule */}
         <ToolbarButton
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          tooltip="分割线"
+          tooltip={t('horizontalRule')}
         >
           <Minus className="h-4 w-4" />
         </ToolbarButton>
 
         {/* Link */}
-        <Toggle
-          size="sm"
-          pressed={editor.isActive('link')}
-          onPressedChange={openLinkDialog}
-        >
+        <Toggle size="sm" pressed={editor.isActive('link')} onPressedChange={openLinkDialog}>
           <LinkIcon className="h-4 w-4" />
         </Toggle>
 
@@ -215,7 +213,7 @@ export function BlogEditorToolbar({ editor, onImageUpload }: BlogEditorToolbarPr
         <ToolbarButton
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          tooltip="上传图片"
+          tooltip={t('uploadImage')}
         >
           <ImagePlus className={cn('h-4 w-4', uploading && 'animate-pulse')} />
         </ToolbarButton>
@@ -232,7 +230,7 @@ export function BlogEditorToolbar({ editor, onImageUpload }: BlogEditorToolbarPr
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>插入链接</DialogTitle>
+            <DialogTitle>{t('insertLink')}</DialogTitle>
           </DialogHeader>
           <Input
             placeholder="https://example.com"
@@ -253,11 +251,9 @@ export function BlogEditorToolbar({ editor, onImageUpload }: BlogEditorToolbarPr
                 setLinkUrl('');
               }}
             >
-              取消
+              {t('cancel')}
             </Button>
-            <Button onClick={handleSetLink}>
-              确认
-            </Button>
+            <Button onClick={handleSetLink}>{t('confirm')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

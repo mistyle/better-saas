@@ -1,6 +1,7 @@
 'use client';
 
 import { Monitor, Moon, Sun } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function ThemeToggle() {
+  const t = useTranslations('theme');
   const { setTheme, theme } = useTheme();
 
   return (
@@ -20,7 +22,7 @@ export function ThemeToggle() {
         <Button variant="ghost" size="sm" className="gap-2">
           <Sun className="dark:-rotate-90 h-4 w-4 rotate-0 scale-100 transition-all dark:scale-0" />
           <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
+          <span className="sr-only">{t('toggle')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -29,21 +31,21 @@ export function ThemeToggle() {
           className={theme === 'light' ? 'bg-accent' : ''}
         >
           <Sun className="mr-2 h-4 w-4" />
-          Light
+          {t('light')}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme('dark')}
           className={theme === 'dark' ? 'bg-accent' : ''}
         >
           <Moon className="mr-2 h-4 w-4" />
-          Dark
+          {t('dark')}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme('system')}
           className={theme === 'system' ? 'bg-accent' : ''}
         >
           <Monitor className="mr-2 h-4 w-4" />
-          System
+          {t('system')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

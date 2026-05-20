@@ -1,6 +1,7 @@
 'use client';
 
 import { Coins, Lock, RefreshCw, TrendingUp } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -9,19 +10,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useCreditBalance } from '@/hooks/use-credits';
 
 export function CreditBalance() {
+  const t = useTranslations('credits.balance');
+  const locale = useLocale();
   const { balance: creditData, error, isLoading, isRefreshing, refresh } = useCreditBalance();
 
   useEffect(() => {
     if (error) {
-      toast.error('Failed to load credit balance');
+      toast.error(t('loadError'));
     }
-  }, [error]);
+  }, [error, t]);
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="font-medium text-sm">Credit Balance</CardTitle>
+          <CardTitle className="font-medium text-sm">{t('title')}</CardTitle>
           <Coins className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -38,13 +41,13 @@ export function CreditBalance() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Credit Balance</CardTitle>
-          <CardDescription>Unable to load credit information</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('unable')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={refresh} variant="outline" size="sm">
             <RefreshCw className="mr-2 h-4 w-4" />
-            Try Again
+            {t('tryAgain')}
           </Button>
         </CardContent>
       </Card>
@@ -56,56 +59,56 @@ export function CreditBalance() {
       {/* Available Balance */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="font-medium text-sm">Available Credits</CardTitle>
+          <CardTitle className="font-medium text-sm">{t('available')}</CardTitle>
           <Coins className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="font-bold text-2xl text-primary">
-            {creditData.availableBalance.toLocaleString()}
+            {creditData.availableBalance.toLocaleString(locale)}
           </div>
-          <p className="text-muted-foreground text-xs">Ready to use</p>
+          <p className="text-muted-foreground text-xs">{t('ready')}</p>
         </CardContent>
       </Card>
 
       {/* Total Balance */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="font-medium text-sm">Total Balance</CardTitle>
+          <CardTitle className="font-medium text-sm">{t('total')}</CardTitle>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="font-bold text-2xl">{creditData.balance.toLocaleString()}</div>
-          <p className="text-muted-foreground text-xs">Including frozen credits</p>
+          <div className="font-bold text-2xl">{creditData.balance.toLocaleString(locale)}</div>
+          <p className="text-muted-foreground text-xs">{t('includingFrozen')}</p>
         </CardContent>
       </Card>
 
       {/* Frozen Balance */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="font-medium text-sm">Frozen Credits</CardTitle>
+          <CardTitle className="font-medium text-sm">{t('frozen')}</CardTitle>
           <Lock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="font-bold text-2xl text-muted-foreground">
-            {creditData.frozenBalance.toLocaleString()}
+            {creditData.frozenBalance.toLocaleString(locale)}
           </div>
-          <p className="text-muted-foreground text-xs">Temporarily unavailable</p>
+          <p className="text-muted-foreground text-xs">{t('temporarilyUnavailable')}</p>
         </CardContent>
       </Card>
 
       {/* Total Earned */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="font-medium text-sm">Total Earned</CardTitle>
+          <CardTitle className="font-medium text-sm">{t('earned')}</CardTitle>
           <Badge variant="secondary" className="h-4 px-1 text-xs">
-            All Time
+            {t('allTime')}
           </Badge>
         </CardHeader>
         <CardContent>
           <div className="font-bold text-2xl text-green-600 dark:text-green-400">
-            {creditData.totalEarned.toLocaleString()}
+            {creditData.totalEarned.toLocaleString(locale)}
           </div>
-          <p className="text-muted-foreground text-xs">Lifetime earnings</p>
+          <p className="text-muted-foreground text-xs">{t('lifetime')}</p>
           <div className="mt-2">
             <Button
               onClick={refresh}

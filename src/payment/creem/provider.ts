@@ -23,8 +23,16 @@ import type {
   SubscriptionResult,
   UpdateSubscriptionParams,
 } from '@/payment/types';
-import { creemClient, creemConfig } from './client';
 import type { CreemSubscription } from './client';
+import { creemClient, creemConfig } from './client';
+
+function getRelationId(value: string | { id: string } | undefined): string {
+  if (!value) {
+    return '';
+  }
+
+  return typeof value === 'string' ? value : value.id;
+}
 
 export class CreemProvider implements PaymentProvider {
   public readonly provider: PaymentProviderName = 'creem';
@@ -48,7 +56,7 @@ export class CreemProvider implements PaymentProvider {
    */
   async createPayment(params: CreatePaymentParams): Promise<PaymentResult> {
     try {
-      const { userId, priceId, successUrl, cancelUrl, metadata } = params;
+      const { userId, priceId, customerId, successUrl, cancelUrl, metadata } = params;
 
       const checkout = await creemClient.createCheckout({
         product_id: priceId, // In Creem, priceId maps to product_id
@@ -60,14 +68,18 @@ export class CreemProvider implements PaymentProvider {
           userId,
           ...metadata,
         },
-        customer_email: metadata?.userEmail,
+        customer: customerId
+          ? { id: customerId, email: metadata?.userEmail }
+          : metadata?.userEmail
+            ? { email: metadata.userEmail }
+            : undefined,
       });
 
       return {
         id: checkout.id,
         status: 'incomplete' as PaymentStatus,
         url: checkout.checkout_url,
-        customerId: checkout.customer_id || '',
+        customerId: checkout.customer_id || getRelationId(checkout.customer),
       };
     } catch (error) {
       console.error('[creem-provider] createPayment error:', error);
@@ -83,7 +95,7 @@ export class CreemProvider implements PaymentProvider {
     params: CreateSubscriptionCheckoutParams
   ): Promise<PaymentResult> {
     try {
-      const { userId, priceId, successUrl, cancelUrl, metadata } = params;
+      const { userId, priceId, customerId, successUrl, cancelUrl, metadata } = params;
 
       const checkout = await creemClient.createCheckout({
         product_id: priceId,
@@ -95,14 +107,18 @@ export class CreemProvider implements PaymentProvider {
           userId,
           ...metadata,
         },
-        customer_email: metadata?.userEmail,
+        customer: customerId
+          ? { id: customerId, email: metadata?.userEmail }
+          : metadata?.userEmail
+            ? { email: metadata.userEmail }
+            : undefined,
       });
 
       return {
         id: checkout.id,
         status: 'incomplete' as PaymentStatus,
         url: checkout.checkout_url,
-        customerId: checkout.customer_id || '',
+        customerId: checkout.customer_id || getRelationId(checkout.customer),
       };
     } catch (error) {
       console.error('[creem-provider] createSubscriptionCheckout error:', error);
@@ -115,7 +131,7 @@ export class CreemProvider implements PaymentProvider {
    */
   async createSubscription(params: CreateSubscriptionParams): Promise<SubscriptionResult> {
     try {
-      const { userId, priceId, metadata } = params;
+      const { userId, priceId, customerId, metadata } = params;
 
       const checkout = await creemClient.createCheckout({
         product_id: priceId,
@@ -124,6 +140,11 @@ export class CreemProvider implements PaymentProvider {
           userId,
           ...metadata,
         },
+        customer: customerId
+          ? { id: customerId, email: metadata?.userEmail }
+          : metadata?.userEmail
+            ? { email: metadata.userEmail }
+            : undefined,
       });
 
       // Creem doesn't return a full subscription at checkout creation
@@ -131,7 +152,7 @@ export class CreemProvider implements PaymentProvider {
       return {
         id: checkout.id,
         status: 'incomplete' as PaymentStatus,
-        customerId: checkout.customer_id || '',
+        customerId: checkout.customer_id || getRelationId(checkout.customer),
         priceId,
         interval: null,
         currentPeriodStart: new Date(),
@@ -172,7 +193,7 @@ export class CreemProvider implements PaymentProvider {
   async cancelSubscription(subscriptionId: string): Promise<boolean> {
     try {
       await creemClient.cancelSubscription(subscriptionId, {
-        mode: 'at_period_end',
+        mode: 'scheduled',
         onExecute: 'cancel',
       });
       return true;
@@ -239,21 +260,27 @@ export class CreemProvider implements PaymentProvider {
     return {
       id: sub.id,
       status: sub.status as PaymentStatus,
-      customerId: sub.customer_id,
-      priceId: sub.product_id,
+      customerId: sub.customer_id || getRelationId(sub.customer),
+      priceId: sub.product_id || getRelationId(sub.product),
       interval: sub.interval || null,
-      periodStart: sub.current_period_start ? new Date(sub.current_period_start) : undefined,
-      periodEnd: sub.current_period_end ? new Date(sub.current_period_end) : undefined,
+      periodStart: this.getPeriodStart(sub),
+      periodEnd: this.getPeriodEnd(sub),
       trialStart: sub.trial_start ? new Date(sub.trial_start) : undefined,
       trialEnd: sub.trial_end ? new Date(sub.trial_end) : undefined,
-      cancelAtPeriodEnd: sub.cancel_at_period_end,
-      currentPeriodStart: sub.current_period_start
-        ? new Date(sub.current_period_start)
-        : new Date(),
-      currentPeriodEnd: sub.current_period_end
-        ? new Date(sub.current_period_end)
-        : new Date(),
+      cancelAtPeriodEnd: sub.cancel_at_period_end || sub.status === 'scheduled_cancel',
+      currentPeriodStart: this.getPeriodStart(sub) || new Date(),
+      currentPeriodEnd: this.getPeriodEnd(sub) || new Date(),
     };
+  }
+
+  private getPeriodStart(sub: CreemSubscription): Date | undefined {
+    const value = sub.current_period_start || sub.current_period_start_date;
+    return value ? new Date(value) : undefined;
+  }
+
+  private getPeriodEnd(sub: CreemSubscription): Date | undefined {
+    const value = sub.current_period_end || sub.current_period_end_date;
+    return value ? new Date(value) : undefined;
   }
 
   private mapCreemStatus(status: string): PaymentStatus {
@@ -265,12 +292,16 @@ export class CreemProvider implements PaymentProvider {
       case 'canceled':
       case 'cancelled':
         return 'canceled';
+      case 'scheduled_cancel':
+        return 'scheduled_cancel';
       case 'past_due':
         return 'past_due';
       case 'trialing':
         return 'trialing';
       case 'paused':
         return 'paused';
+      case 'expired':
+        return 'expired';
       default:
         return 'incomplete';
     }

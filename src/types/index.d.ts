@@ -117,6 +117,10 @@ export interface PaymentPlan {
     monthly?: string;
     yearly?: string;
   };
+  creemProductIds?: {
+    monthly?: string;
+    yearly?: string;
+  };
   // Add yearly price for plans that support both monthly and yearly billing
   yearlyPrice?: number;
   features: string[];
@@ -138,12 +142,17 @@ export interface PaymentPlan {
 }
 
 export interface PaymentConfig {
-  provider: 'stripe';
+  provider: 'stripe' | 'creem';
   currency: string;
   stripe: {
     secretKey: string;
     webhookSecret: string;
     apiVersion: string;
+  };
+  creem: {
+    apiKey: string;
+    webhookSecret: string;
+    baseUrl: string;
   };
   plans: PaymentPlan[];
   trial: {

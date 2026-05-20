@@ -1,3 +1,5 @@
+import Image from 'next/image';
+import { useMessages, useTranslations } from 'next-intl';
 import type React from 'react';
 import {
   Github as IconBrandGithub,
@@ -30,36 +32,6 @@ interface FooterProps {
   }>;
 }
 
-const defaultSections = [
-  {
-    title: 'Product',
-    links: [
-      { name: 'Overview', href: '#' },
-      { name: 'Pricing', href: '#' },
-      { name: 'Marketplace', href: '#' },
-      { name: 'Features', href: '#' },
-    ],
-  },
-  {
-    title: 'Company',
-    links: [
-      { name: 'About', href: '#' },
-      { name: 'Team', href: '#' },
-      { name: 'Blog', href: '#' },
-      { name: 'Careers', href: '#' },
-    ],
-  },
-  {
-    title: 'Resources',
-    links: [
-      { name: 'Help', href: '#' },
-      { name: 'Github', href: 'https://github.com/justnode/better-saas' },
-      { name: 'Advertise', href: '#' },
-      { name: 'Privacy', href: '#' },
-    ],
-  },
-];
-
 const defaultSocialLinks = [
   {
     icon: <IconBrandGithub strokeWidth={1} className="size-5" />,
@@ -75,11 +47,6 @@ const defaultSocialLinks = [
   { icon: <IconBrandLinkedin strokeWidth={1} className="size-5" />, href: '#', label: 'LinkedIn' },
 ];
 
-const defaultLegalLinks = [
-  { name: 'Terms and Conditions', href: '#' },
-  { name: 'Privacy Policy', href: '#' },
-];
-
 export const Footer = ({
   logo = {
     url: '/',
@@ -87,12 +54,24 @@ export const Footer = ({
     alt: 'logo',
     title: 'better-saas.org',
   },
-  sections = defaultSections,
-  description = 'A collection of components for your startup business or side project.',
+  sections,
+  description,
   socialLinks = defaultSocialLinks,
-  copyright = '© 2025 Better-SaaS. All rights reserved.',
-  legalLinks = defaultLegalLinks,
+  copyright,
+  legalLinks,
 }: FooterProps) => {
+  const t = useTranslations('footer');
+  const messages = useMessages() as {
+    footer?: {
+      sections?: FooterProps['sections'];
+      legalLinks?: FooterProps['legalLinks'];
+    };
+  };
+  const finalSections = sections || messages.footer?.sections || [];
+  const finalDescription = description || t('description');
+  const finalCopyright = copyright || t('copyright');
+  const finalLegalLinks = legalLinks || messages.footer?.legalLinks || [];
+
   return (
     <section className="py-32">
       <div className="container mx-auto">
@@ -101,11 +80,11 @@ export const Footer = ({
             {/* Logo */}
             <div className="flex items-center gap-2 lg:justify-start">
               <a href={logo.url}>
-                <img src={logo.src} alt={logo.alt} title={logo.title} className="h-8" />
+                <Image src={logo.src} alt={logo.alt} title={logo.title} width={32} height={32} />
               </a>
               <h2 className="font-semibold text-xl">{logo.title}</h2>
             </div>
-            <p className="max-w-[70%] text-muted-foreground text-sm">{description}</p>
+            <p className="max-w-[70%] text-muted-foreground text-sm">{finalDescription}</p>
             <ul className="flex items-center space-x-6 text-muted-foreground">
               {socialLinks.map((social) => (
                 <li key={social.label} className="font-medium hover:text-primary">
@@ -117,7 +96,7 @@ export const Footer = ({
             </ul>
           </div>
           <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">
-            {sections.map((section, _sectionIdx) => (
+            {finalSections.map((section, _sectionIdx) => (
               <div key={section.title}>
                 <h3 className="mb-4 font-bold">{section.title}</h3>
                 <ul className="space-y-3 text-muted-foreground text-sm">
@@ -132,9 +111,9 @@ export const Footer = ({
           </div>
         </div>
         <div className="mt-8 flex flex-col justify-between gap-4 border-t py-8 font-medium text-muted-foreground text-xs md:flex-row md:items-center md:text-left">
-          <p className="order-2 lg:order-1">{copyright}</p>
+          <p className="order-2 lg:order-1">{finalCopyright}</p>
           <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row">
-            {legalLinks.map((link, _idx) => (
+            {finalLegalLinks.map((link, _idx) => (
               <li key={link.name} className="hover:text-primary">
                 <a href={link.href}> {link.name}</a>
               </li>

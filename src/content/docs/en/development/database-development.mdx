@@ -184,8 +184,8 @@ export abstract class BaseRepository<TSelect, TInsert>
   abstract count(): Promise<number>;
 
   protected handleError(error: unknown, operation: string, code: string): never {
-    const message = error instanceof Error ? error.message : '未知错误';
-    throw new DatabaseError(`${operation}失败: ${message}`, code);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new DatabaseError(`${operation} failed: ${message}`, code);
   }
 }
 ```

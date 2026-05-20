@@ -80,10 +80,12 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
         const redirectUrl = getRedirectUrl();
         router.push(redirectUrl);
       } else {
-        setError(result.error?.message || 'Signup failed');
+        console.error('[signup-form] signup failed:', result.error?.message);
+        setError(t('signupFailed'));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      console.error('[signup-form] signup error:', err);
+      setError(t('signupFailed'));
     } finally {
       setIsSubmitting(false);
     }

@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowRight, CircleCheck } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useMessages, useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,7 @@ interface PricingPlan {
   id: string;
   name: string;
   description: string;
+  price?: number;
   monthlyPrice: string;
   yearlyPrice: string;
   yearlyTotal?: number;
@@ -49,8 +50,17 @@ interface Pricing2Props {
   plans?: PricingPlan[];
 }
 
+interface TranslationPricingPlan {
+  name: string;
+  description: string;
+  features: string[];
+}
+
 const Pricing = ({ heading, description, plans }: Pricing2Props) => {
   const t = useTranslations('pricing');
+  const messages = useMessages() as {
+    pricing?: { plans?: Record<string, TranslationPricingPlan> };
+  };
 
   // 使用i18n翻译或传入的props
   const finalHeading = heading || t('heading');
@@ -69,11 +79,15 @@ const Pricing = ({ heading, description, plans }: Pricing2Props) => {
     plans ||
     paymentPlans.map((plan) => ({
       ...plan,
-      monthlyPrice: plan.price === 0 ? 'Free' : `$${plan.price}`,
+      name: messages.pricing?.plans?.[plan.id]?.name || plan.name,
+      description: messages.pricing?.plans?.[plan.id]?.description || plan.description,
+      monthlyPrice: plan.price === 0 ? t('free') : `$${plan.price}`,
       yearlyPrice:
-        plan.price === 0 ? 'Free' : `$${Math.round((plan.yearlyPrice || plan.price * 10) / 12)}`,
+        plan.price === 0 ? t('free') : `$${Math.round((plan.yearlyPrice || plan.price * 10) / 12)}`,
       yearlyTotal: plan.price === 0 ? 0 : plan.yearlyPrice || plan.price * 10,
-      features: plan.features.map((feature: string) => ({ text: feature })),
+      features: (messages.pricing?.plans?.[plan.id]?.features || plan.features).map(
+        (feature: string) => ({ text: feature })
+      ),
       stripePriceIds: plan.stripePriceIds || {
         monthly: plan.stripePriceId,
         yearly: plan.stripePriceId,
@@ -102,12 +116,8 @@ const Pricing = ({ heading, description, plans }: Pricing2Props) => {
   const handleConfirmPurchase = () => {
     if (!selectedPlan) return;
 
-    const priceId = isYearly
-      ? selectedPlan.stripePriceIds?.yearly
-      : selectedPlan.stripePriceIds?.monthly;
-
-    if (!priceId) {
-      toast.error('价格配置错误，请联系客服');
+    if (!selectedPlan.id) {
+      toast.error(t('priceConfigError'));
       setShowPurchaseDialog(false);
       return;
     }
@@ -115,7 +125,8 @@ const Pricing = ({ heading, description, plans }: Pricing2Props) => {
     startTransition(async () => {
       try {
         const result = await createCheckoutSession({
-          priceId,
+          planId: selectedPlan.id,
+          interval: isYearly ? 'year' : 'month',
           successUrl: `${window.location.origin}/settings/billing?success=true`,
           cancelUrl: `${window.location.origin}/settings/billing?canceled=true`,
         });
@@ -123,11 +134,12 @@ const Pricing = ({ heading, description, plans }: Pricing2Props) => {
         if (result.success && result.data?.url) {
           window.location.href = result.data.url;
         } else {
-          toast.error(result.error || '创建支付会话失败');
+          console.error('[pricing] createCheckoutSession failed:', result.error);
+          toast.error(t('createCheckoutFailed'));
           setShowPurchaseDialog(false);
         }
       } catch (error) {
-        toast.error('创建支付会话失败');
+        toast.error(t('createCheckoutFailed'));
         console.error('[pricing] createCheckoutSession error:', error);
         setShowPurchaseDialog(false);
       }
@@ -171,8 +183,7 @@ const Pricing = ({ heading, description, plans }: Pricing2Props) => {
                           {isYearly
                             ? plan.credits.yearly || plan.credits.monthly * 12
                             : plan.credits.monthly}{' '}
-                          Credits
-                          {isYearly ? '/year' : '/month'}
+                          {isYearly ? t('creditsPerYear') : t('creditsPerMonth')}
                         </Badge>
                       )}
                       {plan.credits.onSubscribe && (
@@ -180,7 +191,7 @@ const Pricing = ({ heading, description, plans }: Pricing2Props) => {
                           variant="outline"
                           className="border-green-200 text-green-700 dark:border-green-800 dark:text-green-300"
                         >
-                          🎁 +{plan.credits.onSubscribe} Bonus
+                          {t('bonusCredits', { count: plan.credits.onSubscribe })}
                         </Badge>
                       )}
                       {plan.credits.onSignup && (
@@ -188,7 +199,7 @@ const Pricing = ({ heading, description, plans }: Pricing2Props) => {
                           variant="outline"
                           className="border-purple-200 text-purple-700 dark:border-purple-800 dark:text-purple-300"
                         >
-                          ✨ {plan.credits.onSignup} Free Credits
+                          {t('freeCredits', { count: plan.credits.onSignup })}
                         </Badge>
                       )}
                     </div>
@@ -198,22 +209,19 @@ const Pricing = ({ heading, description, plans }: Pricing2Props) => {
                     {isYearly ? plan.yearlyPrice : plan.monthlyPrice}
                   </span>
                   <p className="text-muted-foreground">
-                    {plan.monthlyPrice === 'Free' ? (
-                      'Forever free'
-                    ) : (
-                      <>
-                        Billed{' '}
-                        {isYearly
-                          ? `$${plan.yearlyTotal} annually`
-                          : `$${Number(plan.monthlyPrice.slice(1))} monthly`}
-                      </>
-                    )}
+                    {plan.id === 'free' || plan.monthlyPrice === t('free')
+                      ? t('foreverFree')
+                      : isYearly
+                        ? t('billedAnnually', { amount: `$${plan.yearlyTotal}` })
+                        : t('billedMonthly', {
+                            amount: `$${Number(plan.monthlyPrice.slice(1))}`,
+                          })}
                   </p>
                 </CardHeader>
                 <CardContent>
                   <Separator className="mb-6" />
                   {plan.id === 'pro' && (
-                    <p className="mb-3 font-semibold">Everything in Plus, and:</p>
+                    <p className="mb-3 font-semibold">{t('everythingInPlus')}</p>
                   )}
                   <ul className="space-y-4">
                     {plan.features.map((feature: PricingFeature, index: number) => (

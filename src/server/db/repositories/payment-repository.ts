@@ -1,6 +1,12 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import type { PaymentInterval, PaymentRecord, PaymentStatus, PaymentType } from '@/payment/types';
+import type {
+  PaymentInterval,
+  PaymentProviderName,
+  PaymentRecord,
+  PaymentStatus,
+  PaymentType,
+} from '@/payment/types';
 import db from '@/server/db';
 import { payment, paymentEvent } from '@/server/db/schema';
 
@@ -44,12 +50,12 @@ export class PaymentRepository {
    * Create payment record
    */
   async create(data: CreatePaymentData): Promise<PaymentRecord> {
-    const _paymentId = data.id || uuidv4();
+    const paymentId = data.id || uuidv4();
 
     const [result] = await db
       .insert(payment)
       .values({
-        id: data.id || uuidv4(),
+        id: paymentId,
         priceId: data.priceId,
         type: data.type,
         interval: data.interval || null,
@@ -132,7 +138,7 @@ export class PaymentRepository {
         and(
           eq(payment.userId, userId),
           eq(payment.type, 'subscription'),
-          inArray(payment.status, ['active', 'trialing', 'past_due'])
+          inArray(payment.status, ['active', 'trialing', 'past_due', 'scheduled_cancel'])
         )
       )
       .orderBy(desc(payment.createdAt))
@@ -207,6 +213,7 @@ export class PaymentRepository {
       priceId: record.priceId,
       type: record.type as PaymentType,
       interval: record.interval as PaymentInterval,
+      provider: record.provider as PaymentProviderName,
       userId: record.userId,
       customerId: record.customerId,
       subscriptionId: record.subscriptionId || undefined,

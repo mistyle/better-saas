@@ -1,6 +1,6 @@
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { RootProvider } from 'fumadocs-ui/provider/next';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { i18nConfig } from '@/config/i18n.config';
 import { locales } from '@/i18n/routing';
@@ -11,9 +11,23 @@ type Props = {
   params: Promise<{ locale: string }>;
 };
 
+type DocsLayoutTreeItem =
+  | {
+      type: 'folder';
+      name: string;
+      defaultOpen?: boolean;
+      children: DocsLayoutTreeItem[];
+    }
+  | {
+      type: 'page';
+      name: string;
+      url: string;
+    };
+
 export default async function Layout({ children, params }: Props) {
   const { locale } = await params;
   const messages = await getMessages();
+  const t = await getTranslations('docsLayout');
 
   // Get the nested tree structure
   const treeItems = buildDocsTree(locale);
@@ -28,9 +42,7 @@ export default async function Layout({ children, params }: Props) {
     return `/${locale}${path}`;
   };
 
-  // Convert tree items to fumadocs format recursively
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const convertTreeItems = (items: typeof treeItems): any[] => {
+  const convertTreeItems = (items: typeof treeItems): DocsLayoutTreeItem[] => {
     return items.map((item) => {
       if (item.type === 'folder') {
         return {
@@ -49,7 +61,7 @@ export default async function Layout({ children, params }: Props) {
   };
 
   const tree = {
-    name: 'Documentation',
+    name: t('treeName'),
     children: convertTreeItems(treeItems),
   };
 
@@ -69,7 +81,7 @@ export default async function Layout({ children, params }: Props) {
       <DocsLayout
         tree={tree}
         nav={{
-          title: 'Better SaaS Docs',
+          title: t('navTitle'),
           url: navUrl,
         }}
       >

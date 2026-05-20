@@ -43,12 +43,12 @@ export function ProfileContent({
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         if (!appConfig.upload.allowedTypes.includes(file.type)) {
-          toast.error('仅支持 JPEG 和 PNG 格式的图片');
+          toast.error(t('avatar.invalidType'));
           return;
         }
 
         if (file.size > appConfig.upload.maxFileSize) {
-          toast.error('文件大小不能超过 10MB');
+          toast.error(t('avatar.tooLarge'));
           return;
         }
 
@@ -73,7 +73,7 @@ export function ProfileContent({
           <CardHeader>
             <CardTitle>{t('avatar.title')}</CardTitle>
             <CardDescription>
-              {t('avatar.description')} 仅支持 JPEG 和 PNG 格式，最大 10MB
+              {t('avatar.description')} {t('avatar.requirements')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -176,7 +176,7 @@ export function ProfileContent({
                 {t('save')}
               </Button>
             </div>
-            <p className="mt-2 text-muted-foreground text-sm">邮箱更改需要验证，此功能正在开发中</p>
+            <p className="mt-2 text-muted-foreground text-sm">{t('email.comingSoon')}</p>
           </CardContent>
         </Card>
       </div>

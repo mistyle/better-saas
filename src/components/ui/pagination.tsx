@@ -79,7 +79,11 @@ function PaginationNext({ className, ...props }: React.ComponentProps<typeof Pag
   );
 }
 
-function PaginationEllipsis({ className, ...props }: React.ComponentProps<'span'>) {
+function PaginationEllipsis({
+  className,
+  label = 'More pages',
+  ...props
+}: React.ComponentProps<'span'> & { label?: string }) {
   return (
     <span
       aria-hidden
@@ -88,7 +92,7 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<'span'
       {...props}
     >
       <MoreHorizontalIcon className="size-4" />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">{label}</span>
     </span>
   );
 }
@@ -99,6 +103,9 @@ interface PaginationControlsProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   className?: string;
+  previousLabel?: string;
+  nextLabel?: string;
+  morePagesLabel?: string;
 }
 
 function PaginationControls({
@@ -106,6 +113,9 @@ function PaginationControls({
   totalPages,
   onPageChange,
   className,
+  previousLabel = 'Previous',
+  nextLabel = 'Next',
+  morePagesLabel = 'More pages',
 }: PaginationControlsProps) {
   const generatePageNumbers = () => {
     const pages: (number | string)[] = [];
@@ -144,14 +154,14 @@ function PaginationControls({
             className="gap-1 px-2.5"
           >
             <ChevronLeftIcon className="h-4 w-4" />
-            <span className="hidden sm:block">上一页</span>
+            <span className="hidden sm:block">{previousLabel}</span>
           </Button>
         </PaginationItem>
 
         {pages.map((page) => (
           <PaginationItem key={`page-${page}`}>
             {page === '...' ? (
-              <PaginationEllipsis />
+              <PaginationEllipsis label={morePagesLabel} />
             ) : (
               <Button
                 variant={currentPage === page ? 'default' : 'outline'}
@@ -173,7 +183,7 @@ function PaginationControls({
             disabled={currentPage >= totalPages}
             className="gap-1 px-2.5"
           >
-            <span className="hidden sm:block">下一页</span>
+            <span className="hidden sm:block">{nextLabel}</span>
             <ChevronRightIcon className="h-4 w-4" />
           </Button>
         </PaginationItem>

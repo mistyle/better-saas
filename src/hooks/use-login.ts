@@ -1,4 +1,5 @@
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth/auth-client';
 import { useAuthLoading, useIsAuthenticated } from '@/lib/auth/use-auth';
@@ -8,6 +9,7 @@ import { useToastMessages } from './use-toast-messages';
 export function useLogin(): UseLoginReturn {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('auth');
   const toastMessages = useToastMessages();
 
   const isLoading = useAuthLoading();
@@ -62,12 +64,14 @@ export function useLogin(): UseLoginReturn {
         const redirectUrl = getRedirectUrl();
         router.push(redirectUrl);
       } else {
-        const msg = result.error?.message || 'Login failed';
+        console.error('[use-login] email login failed:', result.error?.message);
+        const msg = t('loginFailed');
         setError(msg);
         toastMessages.error.loginFailed(msg);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Login failed';
+      console.error('[use-login] email login error:', err);
+      const msg = t('loginFailed');
       setError(msg);
       toastMessages.error.loginFailed(msg);
     } finally {

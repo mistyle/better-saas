@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertCircle, Calendar, CreditCard } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useI18nConfig } from '@/hooks/use-config';
 import type { PaymentRecord } from '@/payment/types';
 import { cancelSubscription } from '@/server/actions/payment/cancel-subscription';
 
@@ -24,11 +24,12 @@ interface SubscriptionCardProps {
 
 export function SubscriptionCard({ subscription, onUpdate }: SubscriptionCardProps) {
   const [isPending, startTransition] = useTransition();
-  const i18nConfig = useI18nConfig();
+  const t = useTranslations('billing');
+  const locale = useLocale();
 
   const formatDate = (date: Date | null | undefined) => {
-    if (!date) return 'unknown';
-    return new Date(date).toLocaleDateString(i18nConfig.defaultLocale);
+    if (!date) return t('subscriptionCard.unknown');
+    return new Date(date).toLocaleDateString(locale);
   };
 
   const getStatusColor = (status: string) => {
@@ -49,15 +50,15 @@ export function SubscriptionCard({ subscription, onUpdate }: SubscriptionCardPro
   const getStatusText = (status: string) => {
     switch (status) {
       case 'active':
-        return '活跃';
+        return t('active');
       case 'trialing':
-        return '试用中';
+        return t('trial');
       case 'past_due':
-        return '逾期';
+        return t('past_due');
       case 'canceled':
-        return '已取消';
+        return t('canceled');
       case 'incomplete':
-        return '未完成';
+        return t('incomplete');
       default:
         return status;
     }
@@ -67,18 +68,19 @@ export function SubscriptionCard({ subscription, onUpdate }: SubscriptionCardPro
     startTransition(async () => {
       try {
         if (!subscription.subscriptionId) {
-          toast.error('Subscription ID does not exist');
+          toast.error(t('subscriptionCard.missingSubscriptionId'));
           return;
         }
         const result = await cancelSubscription(subscription.subscriptionId);
         if (result.success) {
-          toast.success(result.message || 'Subscription cancelled successfully');
+          toast.success(t('subscriptionCard.cancelSuccess'));
           onUpdate?.();
         } else {
-          toast.error(result.error || 'Subscription cancellation failed');
+          console.error('[subscription-card] cancelSubscription failed:', result.error);
+          toast.error(t('subscriptionCard.cancelFailed'));
         }
       } catch (error) {
-        toast.error('Subscription cancellation failed');
+        toast.error(t('subscriptionCard.cancelFailed'));
         console.error('[subscription-card] cancelSubscription error:', error);
       }
     });
@@ -94,9 +96,9 @@ export function SubscriptionCard({ subscription, onUpdate }: SubscriptionCardPro
           <div>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
-              Current Subscription
+              {t('subscriptionCard.title')}
             </CardTitle>
-            <CardDescription>Your subscription plan details</CardDescription>
+            <CardDescription>{t('subscriptionCard.description')}</CardDescription>
           </div>
           <Badge className={getStatusColor(subscription.status)}>
             {getStatusText(subscription.status)}
@@ -107,19 +109,23 @@ export function SubscriptionCard({ subscription, onUpdate }: SubscriptionCardPro
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-muted-foreground text-sm">Billing Cycle</div>
+            <div className="text-muted-foreground text-sm">
+              {t('subscriptionCard.billingCycle')}
+            </div>
             <div className="font-medium">
               {subscription.interval === 'month'
-                ? 'Monthly'
+                ? t('subscriptionCard.monthly')
                 : subscription.interval === 'year'
-                  ? 'Yearly'
-                  : 'One-time'}
+                  ? t('subscriptionCard.yearly')
+                  : t('subscriptionCard.oneTime')}
             </div>
           </div>
 
           {subscription.periodStart && subscription.periodEnd && (
             <div>
-              <div className="text-muted-foreground text-sm">Current Period</div>
+              <div className="text-muted-foreground text-sm">
+                {t('subscriptionCard.currentPeriod')}
+              </div>
               <div className="font-medium text-sm">
                 {formatDate(subscription.periodStart)} - {formatDate(subscription.periodEnd)}
               </div>
@@ -131,7 +137,7 @@ export function SubscriptionCard({ subscription, onUpdate }: SubscriptionCardPro
           <div className="flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 p-3">
             <AlertCircle className="h-4 w-4 text-blue-500" />
             <div className="text-sm">
-              <span className="font-medium text-blue-500">Trial End:</span>
+              <span className="font-medium text-blue-500">{t('subscriptionCard.trialEnd')}</span>
               <span className="ml-1">{formatDate(subscription.trialEnd)}</span>
             </div>
           </div>
@@ -142,7 +148,7 @@ export function SubscriptionCard({ subscription, onUpdate }: SubscriptionCardPro
             <AlertCircle className="h-4 w-4 text-yellow-500" />
             <div className="text-sm">
               <span className="font-medium text-yellow-500">
-                Will be cancelled at the end of the period
+                {t('subscriptionCard.cancelAtPeriodEnd')}
               </span>
               {subscription.periodEnd && (
                 <span className="ml-1">: {formatDate(subscription.periodEnd)}</span>
@@ -153,7 +159,9 @@ export function SubscriptionCard({ subscription, onUpdate }: SubscriptionCardPro
 
         <div className="flex items-center gap-2 text-muted-foreground text-sm">
           <Calendar className="h-4 w-4" />
-          <span>Subscription start time: {formatDate(subscription.createdAt)}</span>
+          <span>
+            {t('subscriptionCard.startTime', { date: formatDate(subscription.createdAt) })}
+          </span>
         </div>
       </CardContent>
 
@@ -165,7 +173,7 @@ export function SubscriptionCard({ subscription, onUpdate }: SubscriptionCardPro
             disabled={isPending}
             className="w-full"
           >
-            {isPending ? 'Processing...' : 'Cancel Subscription'}
+            {isPending ? t('subscriptionCard.processing') : t('subscriptionCard.cancelButton')}
           </Button>
         </CardFooter>
       )}

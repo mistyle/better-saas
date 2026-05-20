@@ -10,12 +10,14 @@ export type PaymentType = 'one_time' | 'subscription';
 export type PaymentStatus =
   | 'active'
   | 'canceled'
+  | 'scheduled_cancel'
   | 'past_due'
   | 'trialing'
   | 'incomplete'
   | 'incomplete_expired'
   | 'unpaid'
-  | 'paused';
+  | 'paused'
+  | 'expired';
 
 // Payment interval
 export type PaymentInterval = 'month' | 'year' | null;
@@ -31,7 +33,17 @@ export type PaymentEventType =
   | 'invoice.payment_failed'
   | 'customer.subscription.created'
   | 'customer.subscription.updated'
-  | 'customer.subscription.deleted';
+  | 'customer.subscription.deleted'
+  | 'checkout.completed'
+  | 'subscription.active'
+  | 'subscription.paid'
+  | 'subscription.canceled'
+  | 'subscription.scheduled_cancel'
+  | 'subscription.past_due'
+  | 'subscription.expired'
+  | 'subscription.trialing'
+  | 'subscription.paused'
+  | 'subscription.update';
 
 // 创建支付参数
 export interface CreatePaymentParams {
@@ -105,6 +117,7 @@ export interface PaymentRecord {
   priceId: string;
   type: PaymentType;
   interval: PaymentInterval;
+  provider?: PaymentProviderName;
   userId: string;
   customerId: string;
   subscriptionId?: string;

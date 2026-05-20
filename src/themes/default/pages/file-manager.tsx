@@ -20,6 +20,7 @@ export function FileManager() {
   const [currentPage, setCurrentPage] = useState(1);
   const appConfig = useAppConfig();
   const t = useTranslations('fileManager');
+  const paginationT = useTranslations('pagination');
 
   const { files, isLoading, error, uploadFile, deleteFile, isUploading, pagination } = useFiles({
     search: searchQuery,
@@ -81,7 +82,7 @@ export function FileManager() {
       {/* Error message */}
       {error && (
         <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4">
-          <p className="text-destructive text-sm">{error}</p>
+          <p className="text-destructive text-sm">{t('loadFailed')}</p>
         </div>
       )}
 
@@ -102,6 +103,9 @@ export function FileManager() {
             onPageChange={(page: number) => {
               setCurrentPage(page);
             }}
+            previousLabel={t('previousPage')}
+            nextLabel={t('nextPage')}
+            morePagesLabel={paginationT('morePages')}
           />
         </div>
       )}

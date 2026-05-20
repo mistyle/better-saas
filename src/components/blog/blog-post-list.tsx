@@ -1,16 +1,9 @@
 'use client';
 
-import {
-  Archive,
-  Edit,
-  Eye,
-  MoreHorizontal,
-  Plus,
-  Send,
-  Trash2,
-} from 'lucide-react';
+import { Archive, Edit, Eye, MoreHorizontal, Plus, Send, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -67,13 +60,15 @@ interface CategoryOption {
   name: string;
 }
 
-const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  draft: { label: '草稿', variant: 'secondary' },
-  published: { label: '已发布', variant: 'default' },
-  archived: { label: '已归档', variant: 'outline' },
+const statusVariants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  draft: 'secondary',
+  published: 'default',
+  archived: 'outline',
 };
 
 export function BlogPostList() {
+  const t = useTranslations('blogAdmin');
+  const locale = useLocale();
   const router = useRouter();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [total, setTotal] = useState(0);
@@ -110,11 +105,11 @@ export function BlogPostList() {
       setPosts(data.posts || []);
       setTotal(data.total || 0);
     } catch {
-      toast.error('加载文章列表失败');
+      toast.error(t('list.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [page, search, statusFilter, categoryFilter]);
+  }, [page, search, statusFilter, categoryFilter, t]);
 
   useEffect(() => {
     fetchPosts();
@@ -125,11 +120,11 @@ export function BlogPostList() {
     try {
       const res = await fetch(`/api/blog/${deleteId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete failed');
-      toast.success('删除成功');
+      toast.success(t('list.deleteSuccess'));
       setDeleteId(null);
       fetchPosts();
     } catch {
-      toast.error('删除失败');
+      toast.error(t('list.deleteError'));
     }
   };
 
@@ -137,10 +132,10 @@ export function BlogPostList() {
     try {
       const res = await fetch(`/api/blog/${id}/publish`, { method: 'POST' });
       if (!res.ok) throw new Error('Publish failed');
-      toast.success('发布成功');
+      toast.success(t('list.publishSuccess'));
       fetchPosts();
     } catch {
-      toast.error('发布失败');
+      toast.error(t('list.publishError'));
     }
   };
 
@@ -148,10 +143,21 @@ export function BlogPostList() {
     try {
       const res = await fetch(`/api/blog/${id}/archive`, { method: 'POST' });
       if (!res.ok) throw new Error('Archive failed');
-      toast.success('归档成功');
+      toast.success(t('list.archiveSuccess'));
       fetchPosts();
     } catch {
-      toast.error('归档失败');
+      toast.error(t('list.archiveError'));
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'published':
+        return t('statuses.published');
+      case 'archived':
+        return t('statuses.archived');
+      default:
+        return t('statuses.draft');
     }
   };
 
@@ -161,11 +167,11 @@ export function BlogPostList() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-2xl">文章管理</h1>
+        <h1 className="font-bold text-2xl">{t('list.title')}</h1>
         <Button asChild>
           <Link href="/dashboard/blog/new">
             <Plus className="mr-2 h-4 w-4" />
-            新建文章
+            {t('list.newPost')}
           </Link>
         </Button>
       </div>
@@ -173,7 +179,7 @@ export function BlogPostList() {
       {/* Filters */}
       <div className="flex items-center gap-3">
         <Input
-          placeholder="搜索标题..."
+          placeholder={t('list.searchPlaceholder')}
           className="max-w-xs"
           value={search}
           onChange={(e) => {
@@ -189,13 +195,13 @@ export function BlogPostList() {
           }}
         >
           <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="状态筛选" />
+            <SelectValue placeholder={t('list.statusFilter')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">全部状态</SelectItem>
-            <SelectItem value="draft">草稿</SelectItem>
-            <SelectItem value="published">已发布</SelectItem>
-            <SelectItem value="archived">已归档</SelectItem>
+            <SelectItem value="all">{t('list.allStatuses')}</SelectItem>
+            <SelectItem value="draft">{t('statuses.draft')}</SelectItem>
+            <SelectItem value="published">{t('statuses.published')}</SelectItem>
+            <SelectItem value="archived">{t('statuses.archived')}</SelectItem>
           </SelectContent>
         </Select>
         <Select
@@ -206,10 +212,10 @@ export function BlogPostList() {
           }}
         >
           <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="分类筛选" />
+            <SelectValue placeholder={t('list.categoryFilter')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">全部分类</SelectItem>
+            <SelectItem value="all">{t('list.allCategories')}</SelectItem>
             {categories.map((cat) => (
               <SelectItem key={cat.id} value={cat.id}>
                 {cat.name}
@@ -217,9 +223,7 @@ export function BlogPostList() {
             ))}
           </SelectContent>
         </Select>
-        <span className="ml-auto text-muted-foreground text-sm">
-          共 {total} 篇文章
-        </span>
+        <span className="ml-auto text-muted-foreground text-sm">{t('list.total', { total })}</span>
       </div>
 
       {/* Table */}
@@ -227,31 +231,31 @@ export function BlogPostList() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[300px]">标题</TableHead>
-              <TableHead>分类</TableHead>
-              <TableHead>状态</TableHead>
-              <TableHead>语言</TableHead>
-              <TableHead>作者</TableHead>
-              <TableHead>更新时间</TableHead>
-              <TableHead className="w-[80px]">操作</TableHead>
+              <TableHead className="w-[300px]">{t('list.tableTitle')}</TableHead>
+              <TableHead>{t('list.category')}</TableHead>
+              <TableHead>{t('list.status')}</TableHead>
+              <TableHead>{t('list.language')}</TableHead>
+              <TableHead>{t('list.author')}</TableHead>
+              <TableHead>{t('list.updatedAt')}</TableHead>
+              <TableHead className="w-[80px]">{t('list.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                  加载中...
+                  {t('list.loading')}
                 </TableCell>
               </TableRow>
             ) : posts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                  暂无文章
+                  {t('list.empty')}
                 </TableCell>
               </TableRow>
             ) : (
               posts.map((post) => {
-                const statusInfo = statusMap[post.status] ?? { label: '草稿', variant: 'secondary' as const };
+                const statusVariant = statusVariants[post.status] ?? 'secondary';
                 return (
                   <TableRow key={post.id}>
                     <TableCell className="font-medium">{post.title}</TableCell>
@@ -259,12 +263,12 @@ export function BlogPostList() {
                       {post.categoryName || '-'}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                      <Badge variant={statusVariant}>{getStatusLabel(post.status)}</Badge>
                     </TableCell>
                     <TableCell>{post.locale.toUpperCase()}</TableCell>
                     <TableCell>{post.authorName || post.author || '-'}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">
-                      {new Date(post.updatedAt).toLocaleDateString('zh-CN')}
+                      {new Date(post.updatedAt).toLocaleDateString(locale)}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -278,26 +282,26 @@ export function BlogPostList() {
                             onClick={() => router.push(`/dashboard/blog/${post.id}/edit`)}
                           >
                             <Edit className="mr-2 h-4 w-4" />
-                            编辑
+                            {t('list.edit')}
                           </DropdownMenuItem>
                           {post.status === 'published' && (
                             <DropdownMenuItem
                               onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
                             >
                               <Eye className="mr-2 h-4 w-4" />
-                              查看
+                              {t('list.view')}
                             </DropdownMenuItem>
                           )}
                           {post.status !== 'published' && (
                             <DropdownMenuItem onClick={() => handlePublish(post.id)}>
                               <Send className="mr-2 h-4 w-4" />
-                              发布
+                              {t('list.publish')}
                             </DropdownMenuItem>
                           )}
                           {post.status !== 'archived' && (
                             <DropdownMenuItem onClick={() => handleArchive(post.id)}>
                               <Archive className="mr-2 h-4 w-4" />
-                              归档
+                              {t('list.archive')}
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem
@@ -305,7 +309,7 @@ export function BlogPostList() {
                             onClick={() => setDeleteId(post.id)}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            删除
+                            {t('list.delete')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -327,7 +331,7 @@ export function BlogPostList() {
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
           >
-            上一页
+            {t('list.previous')}
           </Button>
           <span className="text-muted-foreground text-sm">
             {page} / {totalPages}
@@ -338,7 +342,7 @@ export function BlogPostList() {
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
           >
-            下一页
+            {t('list.next')}
           </Button>
         </div>
       )}
@@ -347,14 +351,12 @@ export function BlogPostList() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
-            <AlertDialogDescription>
-              删除后无法恢复，确定要删除这篇文章吗？
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('list.deleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('list.deleteDescription')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>确认删除</AlertDialogAction>
+            <AlertDialogCancel>{t('list.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t('list.confirmDelete')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

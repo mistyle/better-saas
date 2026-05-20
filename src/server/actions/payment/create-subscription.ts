@@ -1,13 +1,20 @@
 'use server';
 
 import { and, eq, isNull } from 'drizzle-orm';
+import { paymentConfig } from '@/config/payment.config';
 import { env } from '@/env';
 import { getServerSession } from '@/lib/auth/server-session';
-import { getPaymentProvider, getActivePaymentProviderName } from '@/payment/service';
-import type { ActionResult, PaymentProvider as PaymentProviderInterface } from '@/payment/types';
+import { getActivePaymentProviderName, getPaymentProvider } from '@/payment/service';
+import type {
+  ActionResult,
+  PaymentInterval,
+  PaymentProvider as PaymentProviderInterface,
+  PaymentProviderName,
+} from '@/payment/types';
 import db from '@/server/db';
-import { user } from '@/server/db/schema';
 import { paymentRepository } from '@/server/db/repositories/payment-repository';
+import { user } from '@/server/db/schema';
+import { getPaymentActionMessage } from './action-messages';
 
 /**
  * Get existing or create new Customer ID for a user, and persist it to the user table.
@@ -20,45 +27,105 @@ async function getOrCreateCustomerId(
   email: string,
   name?: string
 ): Promise<string> {
-  // Try to read persisted customerId from user table
+  const providerName = provider.provider;
+
   const [dbUser] = await db
-    .select({ stripeCustomerId: user.stripeCustomerId })
+    .select({ stripeCustomerId: user.stripeCustomerId, paymentProvider: user.paymentProvider })
     .from(user)
     .where(eq(user.id, userId))
     .limit(1);
 
-  if (dbUser?.stripeCustomerId) {
+  if (
+    dbUser?.stripeCustomerId &&
+    (dbUser.paymentProvider === providerName ||
+      (!dbUser.paymentProvider && providerName === 'stripe'))
+  ) {
     return dbUser.stripeCustomerId;
   }
 
-  // Create a new Customer via the active provider
   const customerId = await provider.createCustomer(userId, email, name);
 
-  // Atomic persist: only update if stripe_customer_id is still NULL (no race)
+  // The column name is legacy Stripe-oriented, while payment_provider stores the active owner.
   const updated = await db
     .update(user)
-    .set({ stripeCustomerId: customerId, paymentProvider: getActivePaymentProviderName(), updatedAt: new Date() })
-    .where(and(eq(user.id, userId), isNull(user.stripeCustomerId)))
+    .set({ stripeCustomerId: customerId, paymentProvider: providerName, updatedAt: new Date() })
+    .where(
+      and(
+        eq(user.id, userId),
+        dbUser?.stripeCustomerId && dbUser.paymentProvider !== providerName
+          ? dbUser.paymentProvider
+            ? eq(user.paymentProvider, dbUser.paymentProvider)
+            : isNull(user.paymentProvider)
+          : isNull(user.stripeCustomerId)
+      )
+    )
     .returning({ stripeCustomerId: user.stripeCustomerId });
 
   if (updated.length === 0) {
-    // Another request already set the customerId — read the persisted value
     const [existing] = await db
-      .select({ stripeCustomerId: user.stripeCustomerId })
+      .select({ stripeCustomerId: user.stripeCustomerId, paymentProvider: user.paymentProvider })
       .from(user)
       .where(eq(user.id, userId))
       .limit(1);
-    return existing!.stripeCustomerId!;
+
+    if (
+      existing?.stripeCustomerId &&
+      (existing.paymentProvider === providerName ||
+        (!existing.paymentProvider && providerName === 'stripe'))
+    ) {
+      return existing.stripeCustomerId;
+    }
+
+    const [forced] = await db
+      .update(user)
+      .set({ stripeCustomerId: customerId, paymentProvider: providerName, updatedAt: new Date() })
+      .where(eq(user.id, userId))
+      .returning({ stripeCustomerId: user.stripeCustomerId });
+
+    if (!forced?.stripeCustomerId) {
+      throw new Error('Failed to persist payment customer ID');
+    }
+
+    return forced.stripeCustomerId;
   }
 
   return customerId;
 }
 
 export interface CreateSubscriptionParams {
-  priceId: string;
+  priceId?: string;
+  planId?: string;
+  interval?: Exclude<PaymentInterval, null>;
   trialDays?: number;
   successUrl?: string;
   cancelUrl?: string;
+}
+
+function resolveCheckoutPriceId(
+  providerName: PaymentProviderName,
+  params: CreateSubscriptionParams
+): string | null {
+  if (params.priceId) {
+    return params.priceId;
+  }
+
+  if (!params.planId) {
+    return null;
+  }
+
+  const billingInterval = params.interval || 'month';
+  const billingKey = billingInterval === 'year' ? 'yearly' : 'monthly';
+  const plan = paymentConfig.plans.find((item) => item.id === params.planId);
+
+  if (!plan || plan.id === 'free') {
+    return null;
+  }
+
+  if (providerName === 'creem') {
+    return plan.creemProductIds?.[billingKey] || null;
+  }
+
+  return plan.stripePriceIds?.[billingKey] || plan.stripePriceId || null;
 }
 
 export async function createCheckoutSession(
@@ -71,26 +138,32 @@ export async function createCheckoutSession(
     if (!session?.user) {
       return {
         success: false,
-        error: '请先登录',
+        error: await getPaymentActionMessage('loginRequired'),
       };
     }
 
-    const { priceId, successUrl, cancelUrl } = params;
+    const { successUrl, cancelUrl } = params;
     const provider = getPaymentProvider();
     const providerName = getActivePaymentProviderName();
+    const priceId = resolveCheckoutPriceId(providerName, params);
 
-    // 检查用户是否已有活跃订阅
+    if (!priceId) {
+      return {
+        success: false,
+        error: await getPaymentActionMessage('productNotConfigured'),
+      };
+    }
+
     const existingSubscription = await paymentRepository.findActiveSubscriptionByUserId(
       session.user.id
     );
     if (existingSubscription) {
       return {
         success: false,
-        error: '您已有活跃的订阅',
+        error: await getPaymentActionMessage('activeSubscriptionExists'),
       };
     }
 
-    // 创建或获取客户 ID（从用户表读取或创建后持久化）
     const customerId = await getOrCreateCustomerId(
       provider,
       session.user.id,
@@ -98,7 +171,6 @@ export async function createCheckoutSession(
       session.user.name || undefined
     );
 
-    // For Creem: no need to check price type, always use checkout flow
     if (providerName === 'creem') {
       const checkoutSession = await provider.createSubscriptionCheckout({
         userId: session.user.id,
@@ -115,23 +187,21 @@ export async function createCheckoutSession(
       if (!checkoutSession.url) {
         return {
           success: false,
-          error: '创建支付会话失败',
+          error: await getPaymentActionMessage('createCheckoutFailed'),
         };
       }
 
       return {
         success: true,
         data: { url: checkoutSession.url },
-        message: '正在跳转到支付页面...',
+        message: await getPaymentActionMessage('redirectingToPayment'),
       };
     }
 
-    // For Stripe: check price type to determine mode
     const { stripe } = await import('@/payment/stripe/client');
     const price = await stripe.prices.retrieve(priceId);
 
     if (price.recurring) {
-      // 循环价格 - 创建 Checkout Session 用于订阅
       const checkoutSession = await provider.createSubscriptionCheckout({
         userId: session.user.id,
         priceId,
@@ -147,7 +217,7 @@ export async function createCheckoutSession(
       if (!checkoutSession.url) {
         return {
           success: false,
-          error: '创建支付会话失败',
+          error: await getPaymentActionMessage('createCheckoutFailed'),
         };
       }
 
@@ -156,11 +226,10 @@ export async function createCheckoutSession(
         data: {
           url: checkoutSession.url,
         },
-        message: '正在跳转到支付页面...',
+        message: await getPaymentActionMessage('redirectingToPayment'),
       };
     }
 
-    // 一次性价格 - 创建支付会话
     const checkoutSession = await provider.createPayment({
       userId: session.user.id,
       priceId,
@@ -176,7 +245,7 @@ export async function createCheckoutSession(
     if (!checkoutSession.url) {
       return {
         success: false,
-        error: '创建支付会话失败',
+        error: await getPaymentActionMessage('createCheckoutFailed'),
       };
     }
 
@@ -185,13 +254,13 @@ export async function createCheckoutSession(
       data: {
         url: checkoutSession.url,
       },
-      message: '正在跳转到支付页面...',
+      message: await getPaymentActionMessage('redirectingToPayment'),
     };
   } catch (error) {
     console.error('[payment-subscription] createCheckoutSession error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : '创建支付会话失败',
+      error: await getPaymentActionMessage('createCheckoutFailed'),
     };
   }
 }

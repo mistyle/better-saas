@@ -9,12 +9,13 @@ import {
   Plus,
   RefreshCw,
 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useRouter } from '@/i18n/navigation';
 import { useCreditHistory } from '@/hooks/use-credits';
+import { useRouter } from '@/i18n/navigation';
 
 interface CreditHistoryProps {
   limit?: number;
@@ -27,6 +28,8 @@ export function CreditHistory({
   showViewAll = false,
   enablePagination = false,
 }: CreditHistoryProps) {
+  const t = useTranslations('credits.history');
+  const locale = useLocale();
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
@@ -34,7 +37,11 @@ export function CreditHistory({
   const offset = (currentPage - 1) * itemsPerPage;
 
   // Request one extra to check if there's more data
-  const { transactions: rawTransactions, error, isLoading } = useCreditHistory({
+  const {
+    transactions: rawTransactions,
+    error,
+    isLoading,
+  } = useCreditHistory({
     limit: itemsPerPage + 1,
     offset,
   });
@@ -44,9 +51,9 @@ export function CreditHistory({
 
   useEffect(() => {
     if (error) {
-      toast.error('Failed to load credit history');
+      toast.error(t('loadError'));
     }
-  }, [error]);
+  }, [error, t]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -80,6 +87,23 @@ export function CreditHistory({
     }
   };
 
+  const getSourceLabel = (source: string) => {
+    switch (source) {
+      case 'subscription':
+        return t('sources.subscription');
+      case 'api_call':
+        return t('sources.api_call');
+      case 'admin':
+        return t('sources.admin');
+      case 'storage':
+        return t('sources.storage');
+      case 'bonus':
+        return t('sources.bonus');
+      default:
+        return source.replace('_', ' ');
+    }
+  };
+
   const getSourceBadge = (source: string) => {
     const variants = {
       subscription: 'default',
@@ -91,7 +115,7 @@ export function CreditHistory({
 
     return (
       <Badge variant={variants[source as keyof typeof variants] || 'outline'}>
-        {source.replace('_', ' ')}
+        {getSourceLabel(source)}
       </Badge>
     );
   };
@@ -125,10 +149,8 @@ export function CreditHistory({
     return (
       <div className="py-8 text-center">
         <History className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-        <h3 className="mb-2 font-medium text-lg">No transactions yet</h3>
-        <p className="mb-4 text-muted-foreground">
-          Your credit transactions will appear here once you start using the platform.
-        </p>
+        <h3 className="mb-2 font-medium text-lg">{t('emptyTitle')}</h3>
+        <p className="mb-4 text-muted-foreground">{t('emptyDescription')}</p>
       </div>
     );
   }
@@ -144,22 +166,22 @@ export function CreditHistory({
             <div className="flex-shrink-0">{getTransactionIcon(transaction.type)}</div>
             <div>
               <div className="font-medium">
-                {transaction.description || `${transaction.type} credits`}
+                {transaction.description || t('fallbackDescription', { type: transaction.type })}
               </div>
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 {getSourceBadge(transaction.source)}
                 <span>•</span>
-                <span>{new Date(transaction.createdAt).toLocaleDateString()}</span>
+                <span>{new Date(transaction.createdAt).toLocaleDateString(locale)}</span>
               </div>
             </div>
           </div>
           <div className="text-right">
             <div className={`font-medium ${getTransactionColor(transaction.type)}`}>
               {transaction.type === 'spend' ? '-' : '+'}
-              {transaction.amount.toLocaleString()}
+              {transaction.amount.toLocaleString(locale)}
             </div>
             <div className="text-muted-foreground text-sm">
-              Balance: {transaction.balanceAfter.toLocaleString()}
+              {t('balance', { balance: transaction.balanceAfter.toLocaleString(locale) })}
             </div>
           </div>
         </div>
@@ -172,7 +194,7 @@ export function CreditHistory({
             className="w-full"
             onClick={() => router.push('/credits/history')}
           >
-            View All Transactions
+            {t('viewAll')}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -188,10 +210,10 @@ export function CreditHistory({
             className="gap-2"
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {t('previous')}
           </Button>
 
-          <span className="text-muted-foreground text-sm">Page {currentPage}</span>
+          <span className="text-muted-foreground text-sm">{t('page', { page: currentPage })}</span>
 
           <Button
             variant="outline"
@@ -200,7 +222,7 @@ export function CreditHistory({
             disabled={!hasMoreData || isLoading}
             className="gap-2"
           >
-            Next
+            {t('next')}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

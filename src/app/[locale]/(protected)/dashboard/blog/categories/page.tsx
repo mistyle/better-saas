@@ -1,6 +1,7 @@
 'use client';
 
 import { FolderPlus, Pencil, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -59,6 +60,7 @@ interface CategoryForm {
 const emptyForm: CategoryForm = { name: '', slug: '', description: '', locale: 'zh', sortOrder: 0 };
 
 export default function CategoriesPage() {
+  const t = useTranslations('blogAdmin.categories');
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -75,11 +77,11 @@ export default function CategoriesPage() {
       const data = await res.json();
       setCategories(data.categories || []);
     } catch {
-      toast.error('加载分类列表失败');
+      toast.error(t('loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchCategories();
@@ -115,7 +117,7 @@ export default function CategoriesPage() {
 
   const handleSave = async () => {
     if (!form.name.trim() || !form.slug.trim()) {
-      toast.error('名称和 Slug 不能为空');
+      toast.error(t('nameRequired'));
       return;
     }
     setSaving(true);
@@ -129,13 +131,14 @@ export default function CategoriesPage() {
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || '保存失败');
+        console.error('[blog-categories] save failed:', err.error);
+        throw new Error(t('saveError'));
       }
-      toast.success(editingId ? '更新成功' : '创建成功');
+      toast.success(editingId ? t('updateSuccess') : t('createSuccess'));
       setDialogOpen(false);
       fetchCategories();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '保存失败');
+      toast.error(error instanceof Error ? error.message : t('saveError'));
     } finally {
       setSaving(false);
     }
@@ -146,21 +149,21 @@ export default function CategoriesPage() {
     try {
       const res = await fetch(`/api/blog/categories/${deleteId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete failed');
-      toast.success('删除成功');
+      toast.success(t('deleteSuccess'));
       setDeleteId(null);
       fetchCategories();
     } catch {
-      toast.error('删除失败');
+      toast.error(t('deleteError'));
     }
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-2xl">分类管理</h1>
+        <h1 className="font-bold text-2xl">{t('title')}</h1>
         <Button onClick={openCreate}>
           <FolderPlus className="mr-2 h-4 w-4" />
-          新建分类
+          {t('newCategory')}
         </Button>
       </div>
 
@@ -168,25 +171,25 @@ export default function CategoriesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>名称</TableHead>
+              <TableHead>{t('name')}</TableHead>
               <TableHead>Slug</TableHead>
-              <TableHead>语言</TableHead>
-              <TableHead>排序</TableHead>
-              <TableHead>描述</TableHead>
-              <TableHead className="w-[100px]">操作</TableHead>
+              <TableHead>{t('language')}</TableHead>
+              <TableHead>{t('sortOrder')}</TableHead>
+              <TableHead>{t('description')}</TableHead>
+              <TableHead className="w-[100px]">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  加载中...
+                  {t('loading')}
                 </TableCell>
               </TableRow>
             ) : categories.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  暂无分类，点击"新建分类"创建
+                  {t('empty')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -201,7 +204,12 @@ export default function CategoriesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(cat)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => openEdit(cat)}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
@@ -225,15 +233,15 @@ export default function CategoriesPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingId ? '编辑分类' : '新建分类'}</DialogTitle>
+            <DialogTitle>{editingId ? t('editTitle') : t('createTitle')}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="space-y-2">
-              <Label>名称 *</Label>
+              <Label>{t('nameLabel')}</Label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="分类名称"
+                placeholder={t('namePlaceholder')}
               />
             </div>
             <div className="space-y-2">
@@ -245,13 +253,16 @@ export default function CategoriesPage() {
                   placeholder="category-slug"
                 />
                 <Button type="button" variant="outline" size="sm" onClick={generateSlug}>
-                  生成
+                  {t('generate')}
                 </Button>
               </div>
             </div>
             <div className="space-y-2">
-              <Label>语言</Label>
-              <Select value={form.locale} onValueChange={(v) => setForm((f) => ({ ...f, locale: v }))}>
+              <Label>{t('language')}</Label>
+              <Select
+                value={form.locale}
+                onValueChange={(v) => setForm((f) => ({ ...f, locale: v }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -262,7 +273,7 @@ export default function CategoriesPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>排序（数字越小越靠前）</Label>
+              <Label>{t('sortLabel')}</Label>
               <Input
                 type="number"
                 value={form.sortOrder}
@@ -270,18 +281,20 @@ export default function CategoriesPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>描述</Label>
+              <Label>{t('description')}</Label>
               <Input
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="分类描述（可选）"
+                placeholder={t('descriptionPlaceholder')}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDialogOpen(false)}>取消</Button>
+            <Button variant="ghost" onClick={() => setDialogOpen(false)}>
+              {t('cancel')}
+            </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? '保存中...' : '保存'}
+              {saving ? t('saving') : t('save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -291,14 +304,12 @@ export default function CategoriesPage() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
-            <AlertDialogDescription>
-              删除分类后，已关联该分类的文章将变为"无分类"状态。确定要删除吗？
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('deleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('deleteDescription')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>确认删除</AlertDialogAction>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t('confirmDelete')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BlogEditorForm } from '@/components/blog/blog-editor-form';
@@ -22,6 +23,7 @@ interface BlogPost {
 }
 
 export default function EditBlogPostPage() {
+  const t = useTranslations('blogAdmin.editor');
   const params = useParams();
   const router = useRouter();
   const [post, setPost] = useState<BlogPost | null>(null);
@@ -37,7 +39,7 @@ export default function EditBlogPostPage() {
         const data = await res.json();
         setPost(data);
       } catch {
-        toast.error('加载文章失败');
+        toast.error(t('loadError'));
         router.push('/dashboard/blog');
       } finally {
         setLoading(false);
@@ -47,7 +49,7 @@ export default function EditBlogPostPage() {
     if (params.id) {
       fetchPost();
     }
-  }, [params.id, router]);
+  }, [params.id, router, t]);
 
   if (loading) {
     return <LoadingSkeleton />;

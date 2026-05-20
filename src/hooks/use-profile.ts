@@ -45,7 +45,8 @@ export function useProfile(): UseProfileReturn {
       if (result.data?.status) {
         toastMessages.success.nameUpdated();
       } else {
-        toastMessages.error.nameUpdateFailed(result.error?.message);
+        console.error('[use-profile] updateUser name failed:', result.error?.message);
+        toastMessages.error.nameUpdateFailed();
       }
     } catch (_error) {
       toastMessages.error.nameUpdateFailed();
@@ -66,11 +67,12 @@ export function useProfile(): UseProfileReturn {
       if (updateResult.data?.status) {
         toastMessages.success.avatarUpdated();
       } else {
-        toastMessages.error.avatarUpdateFailed(updateResult.error?.message);
+        console.error('[use-profile] updateUser avatar failed:', updateResult.error?.message);
+        toastMessages.error.avatarUpdateFailed();
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : undefined;
-      toastMessages.error.fileUploadFailed(errorMessage);
+      console.error('[use-profile] upload avatar failed:', error);
+      toastMessages.error.fileUploadFailed();
     } finally {
       setIsUpdatingAvatar(false);
     }

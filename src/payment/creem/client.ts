@@ -25,36 +25,54 @@ export interface CreemCheckoutRequest {
   success_url: string;
   cancel_url?: string;
   metadata?: Record<string, string>;
-  customer_email?: string;
+  customer?: {
+    id?: string;
+    email?: string;
+  };
 }
 
 export interface CreemCheckoutResponse {
   id: string;
   checkout_url: string;
   status: string;
-  product_id: string;
+  product_id?: string;
+  product?: string | { id: string };
   customer_id?: string;
+  customer?: string | { id: string; email?: string };
   subscription_id?: string;
+  subscription?: string | CreemSubscription;
   metadata?: Record<string, string>;
 }
 
 export interface CreemSubscription {
   id: string;
-  status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete' | 'paused';
-  product_id: string;
-  customer_id: string;
-  current_period_start: string; // ISO date
-  current_period_end: string; // ISO date
-  cancel_at_period_end: boolean;
+  status:
+    | 'active'
+    | 'canceled'
+    | 'scheduled_cancel'
+    | 'past_due'
+    | 'trialing'
+    | 'incomplete'
+    | 'paused'
+    | 'expired';
+  product_id?: string;
+  product?: string | { id: string };
+  customer_id?: string;
+  customer?: string | { id: string; email?: string };
+  current_period_start?: string; // ISO date
+  current_period_end?: string; // ISO date
+  current_period_start_date?: string; // ISO date
+  current_period_end_date?: string; // ISO date
+  cancel_at_period_end?: boolean;
   canceled_at?: string;
   trial_start?: string;
   trial_end?: string;
-  interval: 'month' | 'year';
+  interval?: 'month' | 'year';
   metadata?: Record<string, string>;
 }
 
 export interface CreemCancelRequest {
-  mode: 'immediate' | 'at_period_end';
+  mode: 'immediate' | 'scheduled';
   onExecute?: 'cancel' | 'pause';
 }
 
@@ -66,12 +84,14 @@ export interface CreemCustomer {
 }
 
 export interface CreemWebhookEvent {
-  id: string;
-  type: 'checkout.completed' | 'subscription.active' | 'subscription.paid' | 'subscription.canceled';
-  data: {
-    object: Record<string, unknown>;
+  id?: string;
+  eventType?: string;
+  type?: string;
+  object?: Record<string, unknown>;
+  data?: {
+    object?: Record<string, unknown>;
   };
-  created_at: string;
+  created_at?: string;
 }
 
 // --- HTTP Client ---
@@ -134,7 +154,7 @@ class CreemClient {
 
   async cancelSubscription(
     subscriptionId: string,
-    params: CreemCancelRequest = { mode: 'at_period_end', onExecute: 'cancel' }
+    params: CreemCancelRequest = { mode: 'scheduled', onExecute: 'cancel' }
   ): Promise<CreemSubscription> {
     return this.request<CreemSubscription>(
       'POST',

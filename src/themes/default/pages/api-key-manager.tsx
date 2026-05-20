@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns';
 import { Copy, Eye, EyeOff, Key, Plus, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -44,6 +45,7 @@ interface CreateApiKeyResponse {
 }
 
 export function SimpleApiKeyManager() {
+  const t = useTranslations('apiKeys');
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -62,20 +64,20 @@ export function SimpleApiKeyManager() {
         const data = await response.json();
         setApiKeys(data.apiKeys);
       } else {
-        toast.error('无法获取API Key列表');
+        toast.error(t('fetchError'));
       }
     } catch (error) {
       console.error('Error fetching API keys:', error);
-      toast.error('网络错误，请稍后重试');
+      toast.error(t('networkError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // 创建新的API Key
   const createApiKey = async () => {
     if (!newKeyName.trim()) {
-      toast.error('请输入API Key名称');
+      toast.error(t('nameRequired'));
       return;
     }
 
@@ -99,14 +101,15 @@ export function SimpleApiKeyManager() {
         setNewKeyName('');
         setNewKeyExpiry('');
         setShowCreateDialog(false);
-        toast.success('API Key已创建，请妥善保存');
+        toast.success(t('createSuccess'));
       } else {
         const error = await response.json();
-        toast.error(error.error || '创建API Key失败');
+        console.error('[api-keys] create failed:', error.error);
+        toast.error(t('createError'));
       }
     } catch (error) {
       console.error('Error creating API key:', error);
-      toast.error('网络错误，请稍后重试');
+      toast.error(t('networkError'));
     } finally {
       setCreating(false);
     }
@@ -121,14 +124,15 @@ export function SimpleApiKeyManager() {
 
       if (response.ok) {
         setApiKeys(apiKeys.filter((key) => key.id !== keyId));
-        toast.success('API Key已删除');
+        toast.success(t('deleteSuccess'));
       } else {
         const error = await response.json();
-        toast.error(error.error || '删除API Key失败');
+        console.error('[api-keys] delete failed:', error.error);
+        toast.error(t('deleteError'));
       }
     } catch (error) {
       console.error('Error deleting API key:', error);
-      toast.error('网络错误，请稍后重试');
+      toast.error(t('networkError'));
     }
   };
 
@@ -136,10 +140,10 @@ export function SimpleApiKeyManager() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('API Key已复制到剪贴板');
+      toast.success(t('copySuccess'));
     } catch (error) {
       console.error('Failed to copy:', error);
-      toast.error('无法复制到剪贴板');
+      toast.error(t('copyError'));
     }
   };
 
@@ -153,13 +157,13 @@ export function SimpleApiKeyManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Key className="h-5 w-5" />
-            API Keys
+            {t('title')}
           </CardTitle>
-          <CardDescription>管理您的API访问密钥</CardDescription>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <div className="text-muted-foreground text-sm">加载中...</div>
+            <div className="text-muted-foreground text-sm">{t('loading')}</div>
           </div>
         </CardContent>
       </Card>
@@ -171,19 +175,17 @@ export function SimpleApiKeyManager() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Key className="h-5 w-5" />
-          API Keys
+          {t('title')}
         </CardTitle>
-        <CardDescription>管理您的API访问密钥，用于调用外部API服务</CardDescription>
+        <CardDescription>{t('fullDescription')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* 新创建的Key显示 */}
         {newlyCreatedKey && (
           <Card className="border-green-200 bg-green-50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-green-800 text-sm">新创建的API Key</CardTitle>
-              <CardDescription className="text-green-600">
-                请立即复制并保存此密钥，它只会显示一次
-              </CardDescription>
+              <CardTitle className="text-green-800 text-sm">{t('newKeyTitle')}</CardTitle>
+              <CardDescription className="text-green-600">{t('newKeyDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex items-center gap-2">
@@ -209,7 +211,7 @@ export function SimpleApiKeyManager() {
                 className="mt-2"
                 onClick={() => setNewlyCreatedKey(null)}
               >
-                我已保存，关闭
+                {t('savedClose')}
               </Button>
             </CardContent>
           </Card>
@@ -218,32 +220,32 @@ export function SimpleApiKeyManager() {
         {/* 创建新Key按钮 */}
         <div className="flex items-center justify-between">
           <div className="text-muted-foreground text-sm">
-            {apiKeys.length === 0 ? '暂无API Key' : `共 ${apiKeys.length} 个API Key`}
+            {apiKeys.length === 0 ? t('empty') : t('count', { count: apiKeys.length })}
           </div>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="mr-2 h-4 w-4" />
-                创建API Key
+                {t('createButton')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>创建新的API Key</DialogTitle>
-                <DialogDescription>创建一个新的API Key用于访问我们的API服务</DialogDescription>
+                <DialogTitle>{t('createDialogTitle')}</DialogTitle>
+                <DialogDescription>{t('createDialogDescription')}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="keyName">名称</Label>
+                  <Label htmlFor="keyName">{t('name')}</Label>
                   <Input
                     id="keyName"
-                    placeholder="输入API Key名称"
+                    placeholder={t('namePlaceholder')}
                     value={newKeyName}
                     onChange={(e) => setNewKeyName(e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="keyExpiry">过期时间（可选）</Label>
+                  <Label htmlFor="keyExpiry">{t('expiry')}</Label>
                   <Input
                     id="keyExpiry"
                     type="datetime-local"
@@ -254,10 +256,10 @@ export function SimpleApiKeyManager() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  取消
+                  {t('cancel')}
                 </Button>
                 <Button onClick={createApiKey} disabled={creating}>
-                  {creating ? '创建中...' : '创建'}
+                  {creating ? t('creating') : t('create')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -274,16 +276,28 @@ export function SimpleApiKeyManager() {
                     <div className="mb-1 flex items-center gap-2">
                       <h4 className="font-medium">{key.name}</h4>
                       {key.expiresAt && new Date(key.expiresAt) < new Date() && (
-                        <Badge variant="destructive">已过期</Badge>
+                        <Badge variant="destructive">{t('expired')}</Badge>
                       )}
                     </div>
                     <div className="space-y-1 text-muted-foreground text-sm">
-                      <div>创建时间: {format(new Date(key.createdAt), 'yyyy-MM-dd HH:mm')}</div>
+                      <div>
+                        {t('createdAt', {
+                          date: format(new Date(key.createdAt), 'yyyy-MM-dd HH:mm'),
+                        })}
+                      </div>
                       {key.expiresAt && (
-                        <div>过期时间: {format(new Date(key.expiresAt), 'yyyy-MM-dd HH:mm')}</div>
+                        <div>
+                          {t('expiresAt', {
+                            date: format(new Date(key.expiresAt), 'yyyy-MM-dd HH:mm'),
+                          })}
+                        </div>
                       )}
                       {key.lastUsedAt && (
-                        <div>最后使用: {format(new Date(key.lastUsedAt), 'yyyy-MM-dd HH:mm')}</div>
+                        <div>
+                          {t('lastUsedAt', {
+                            date: format(new Date(key.lastUsedAt), 'yyyy-MM-dd HH:mm'),
+                          })}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -296,18 +310,18 @@ export function SimpleApiKeyManager() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>确认删除</AlertDialogTitle>
+                          <AlertDialogTitle>{t('deleteTitle')}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            确定要删除API Key "{key.name}" 吗？此操作无法撤销。
+                            {t('deleteDescription', { name: key.name })}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>取消</AlertDialogCancel>
+                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => deleteApiKey(key.id)}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
-                            删除
+                            {t('delete')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

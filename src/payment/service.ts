@@ -5,9 +5,9 @@
  * Inspired by ShipFree's multi-provider architecture.
  */
 
-import type { PaymentProvider } from './types';
-import { StripeProvider } from './stripe/provider';
 import { CreemProvider } from './creem/provider';
+import { StripeProvider } from './stripe/provider';
+import type { PaymentProvider } from './types';
 
 export type PaymentProviderName = 'stripe' | 'creem';
 
@@ -22,6 +22,20 @@ export function getActivePaymentProviderName(): PaymentProviderName {
 }
 
 /**
+ * Build a provider instance by name.
+ */
+export function createPaymentProvider(providerName: PaymentProviderName): PaymentProvider {
+  switch (providerName) {
+    case 'creem':
+      return new CreemProvider();
+    case 'stripe':
+      return new StripeProvider();
+    default:
+      return new StripeProvider();
+  }
+}
+
+/**
  * Get the active payment provider instance (singleton)
  */
 export function getPaymentProvider(): PaymentProvider {
@@ -31,15 +45,7 @@ export function getPaymentProvider(): PaymentProvider {
 
   const providerName = getActivePaymentProviderName();
 
-  switch (providerName) {
-    case 'creem':
-      paymentProviderInstance = new CreemProvider();
-      break;
-    case 'stripe':
-    default:
-      paymentProviderInstance = new StripeProvider();
-      break;
-  }
+  paymentProviderInstance = createPaymentProvider(providerName);
 
   return paymentProviderInstance;
 }

@@ -2,7 +2,7 @@
 
 import { Calendar, CreditCard, RefreshCw } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -12,9 +12,17 @@ import { useBilling } from '@/hooks/use-billing';
 import { SubscriptionCard } from '@/themes/default/blocks/subscription-card';
 
 export function BillingPage() {
-  const { billingInfo, error, isLoading: loading, isSyncing: syncing, syncSubscription, refresh } = useBilling();
+  const {
+    billingInfo,
+    error,
+    isLoading: loading,
+    isSyncing: syncing,
+    syncSubscription,
+    refresh,
+  } = useBilling();
   const searchParams = useSearchParams();
   const t = useTranslations('billing');
+  const locale = useLocale();
 
   useEffect(() => {
     if (error) {
@@ -60,7 +68,7 @@ export function BillingPage() {
 
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return t('unknow');
-    return new Date(date).toLocaleDateString('zh-CN');
+    return new Date(date).toLocaleDateString(locale);
   };
 
   const getStatusText = (status: string) => {
@@ -101,7 +109,7 @@ export function BillingPage() {
         <Card>
           <CardContent className="flex items-center justify-center p-6">
             <div className="text-center">
-              <p className="text-destructive">{error.message}</p>
+              <p className="text-destructive">{t('get_billing_info_failed')}</p>
             </div>
           </CardContent>
         </Card>
@@ -190,10 +198,7 @@ export function BillingPage() {
 
       {/* Current subscription */}
       {billingInfo?.activeSubscription ? (
-        <SubscriptionCard
-          subscription={billingInfo.activeSubscription}
-          onUpdate={refresh}
-        />
+        <SubscriptionCard subscription={billingInfo.activeSubscription} onUpdate={refresh} />
       ) : (
         <Card>
           <CardHeader>
@@ -240,7 +245,7 @@ export function BillingPage() {
                     </div>
                     {payment.interval && (
                       <div className="text-muted-foreground text-sm">
-                        {t('billing_cycle')}：
+                        {t('billing_cycle')}:
                         {payment.interval === 'month' ? t('month_payment') : t('year_payment')}
                       </div>
                     )}

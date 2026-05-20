@@ -10,6 +10,7 @@ import {
   User,
   XCircle,
 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,6 +36,8 @@ import {
 import { useUsers } from '@/hooks/use-users';
 
 export function UserList() {
+  const t = useTranslations('userList');
+  const locale = useLocale();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'createdAt'>('createdAt');
@@ -51,7 +54,11 @@ export function UserList() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data, error, isLoading: loading } = useUsers({
+  const {
+    data,
+    error,
+    isLoading: loading,
+  } = useUsers({
     page,
     pageSize,
     search: debouncedSearch,
@@ -62,9 +69,9 @@ export function UserList() {
   useEffect(() => {
     if (error) {
       console.error('Error fetching users:', error);
-      toast.error('获取用户列表失败');
+      toast.error(t('loadError'));
     }
-  }, [error]);
+  }, [error, t]);
 
   const handleSort = (column: 'name' | 'email' | 'createdAt') => {
     if (sortBy === column) {
@@ -86,7 +93,7 @@ export function UserList() {
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('zh-CN', {
+    return new Date(date).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -132,7 +139,7 @@ export function UserList() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>用户列表</CardTitle>
+          <CardTitle>{t('title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -163,7 +170,7 @@ export function UserList() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>用户列表</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -173,7 +180,7 @@ export function UserList() {
               <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-gray-400" />
               <Input
                 data-testid="user-search"
-                placeholder="搜索用户名或邮箱..."
+                placeholder={t('searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -181,7 +188,7 @@ export function UserList() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 text-sm">每页显示</span>
+              <span className="text-gray-500 text-sm">{t('pageSizePrefix')}</span>
               <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
                 <SelectTrigger className="w-20">
                   <SelectValue />
@@ -193,7 +200,7 @@ export function UserList() {
                   <SelectItem value="50">50</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="text-gray-500 text-sm">条记录</span>
+              <span className="text-gray-500 text-sm">{t('pageSizeSuffix')}</span>
             </div>
           </div>
 
@@ -202,26 +209,26 @@ export function UserList() {
             <Table data-testid="users-table">
               <TableHeader>
                 <TableRow>
-                  <TableHead>用户</TableHead>
+                  <TableHead>{t('user')}</TableHead>
                   <TableHead>
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('email')}
                       className="h-auto p-0 font-medium"
                     >
-                      邮箱
+                      {t('email')}
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                   </TableHead>
-                  <TableHead>角色</TableHead>
-                  <TableHead>状态</TableHead>
+                  <TableHead>{t('role')}</TableHead>
+                  <TableHead>{t('status')}</TableHead>
                   <TableHead>
                     <Button
                       variant="ghost"
                       onClick={() => handleSort('createdAt')}
                       className="h-auto p-0 font-medium"
                     >
-                      注册时间
+                      {t('createdAt')}
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                   </TableHead>
@@ -237,7 +244,7 @@ export function UserList() {
                           <AvatarFallback>{getUserInitials(user.name, user.email)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium">{user.name || '未设置姓名'}</div>
+                          <div className="font-medium">{user.name || t('unnamed')}</div>
                           <div className="text-gray-500 text-sm">ID: {user.id.slice(0, 8)}...</div>
                         </div>
                       </div>
@@ -246,7 +253,7 @@ export function UserList() {
                     <TableCell>
                       <Badge className={`${getRoleColor(user.role)} flex w-fit items-center gap-1`}>
                         {getRoleIcon(user.role)}
-                        {user.role === 'admin' ? '管理员' : '用户'}
+                        {user.role === 'admin' ? t('admin') : t('regularUser')}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -257,12 +264,12 @@ export function UserList() {
                         {user.emailVerified ? (
                           <>
                             <CheckCircle className="h-4 w-4 text-green-500" />
-                            <span className="text-green-700 text-sm">已验证</span>
+                            <span className="text-green-700 text-sm">{t('verified')}</span>
                           </>
                         ) : (
                           <>
                             <XCircle className="h-4 w-4 text-red-500" />
-                            <span className="text-red-700 text-sm">未验证</span>
+                            <span className="text-red-700 text-sm">{t('unverified')}</span>
                           </>
                         )}
                       </div>
@@ -280,8 +287,11 @@ export function UserList() {
           {data && data.totalPages > 1 && (
             <div className="flex items-center justify-between">
               <div className="text-gray-500 text-sm">
-                显示 {(data.page - 1) * data.pageSize + 1} -{' '}
-                {Math.min(data.page * data.pageSize, data.total)} 条， 共 {data.total} 条记录
+                {t('range', {
+                  start: (data.page - 1) * data.pageSize + 1,
+                  end: Math.min(data.page * data.pageSize, data.total),
+                  total: data.total,
+                })}
               </div>
 
               <div className="flex items-center gap-2">
@@ -292,7 +302,7 @@ export function UserList() {
                   disabled={data.page <= 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  上一页
+                  {t('previous')}
                 </Button>
 
                 <div className="flex items-center gap-1">
@@ -320,7 +330,7 @@ export function UserList() {
                   onClick={() => handlePageChange(data.page + 1)}
                   disabled={data.page >= data.totalPages}
                 >
-                  下一页
+                  {t('next')}
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

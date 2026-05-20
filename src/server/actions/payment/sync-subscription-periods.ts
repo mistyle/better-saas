@@ -1,88 +1,63 @@
 'use server';
 
 import { getServerSession } from '@/lib/auth/server-session';
-import type { ActionResult } from '@/payment/types';
+import { createPaymentProvider } from '@/payment/service';
+import type { ActionResult, PaymentProviderName } from '@/payment/types';
 import { paymentRepository } from '@/server/db/repositories/payment-repository';
-import type { SubscriptionWithPeriod } from '@/types/stripe-extended';
+import { getPaymentActionMessage } from './action-messages';
 
 export async function syncSingleSubscription(
   subscriptionId: string
 ): Promise<ActionResult<{ updated: boolean }>> {
-  let session: { user?: { id: string } } | null = null;
-
   try {
-    session = await getServerSession();
+    const session = await getServerSession();
     if (!session?.user) {
       return {
         success: false,
-        error: '请先登录',
+        error: await getPaymentActionMessage('loginRequired'),
       };
     }
 
-    // Verify subscription belongs to current user
     const paymentRecord = await paymentRepository.findBySubscriptionId(subscriptionId);
     if (!paymentRecord || paymentRecord.userId !== session.user.id) {
       return {
         success: false,
-        error: '订阅不存在或无权操作',
+        error: await getPaymentActionMessage('subscriptionNotFoundOrUnauthorized'),
       };
     }
 
-    // Get fresh subscription data directly from Stripe API with expanded data
-    const { stripe } = await import('@/payment/stripe/client');
-    const rawStripeSubscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId, {
-      expand: ['latest_invoice', 'items.data.price'],
-    });
-    const rawStripeSubscription =
-      rawStripeSubscriptionResponse as unknown as SubscriptionWithPeriod;
+    const provider = createPaymentProvider(
+      (paymentRecord.provider || 'stripe') as PaymentProviderName
+    );
+    const subscription = await provider.getSubscription(subscriptionId);
 
-    // Get period information from subscription items (this is where Stripe stores the actual period info)
-    const subscriptionItem = rawStripeSubscription.items?.data?.[0];
-
-    if (!subscriptionItem?.current_period_start || !subscriptionItem?.current_period_end) {
+    if (!subscription) {
       return {
         success: false,
-        error: `Stripe 订阅项目缺少期间信息 - status: ${rawStripeSubscription.status}, created: ${new Date(rawStripeSubscription.created * 1000).toISOString()}`,
+        error: await getPaymentActionMessage('subscriptionNotFoundAtProvider'),
       };
     }
 
-    // Convert timestamps to dates (use subscription item period info)
-    const periodStart = new Date(subscriptionItem.current_period_start * 1000);
-    const periodEnd = new Date(subscriptionItem.current_period_end * 1000);
-    const trialStart = rawStripeSubscription.trial_start
-      ? new Date(rawStripeSubscription.trial_start * 1000)
-      : undefined;
-    const trialEnd = rawStripeSubscription.trial_end
-      ? new Date(rawStripeSubscription.trial_end * 1000)
-      : undefined;
-
-    // Update the database with the correct information
     await paymentRepository.update(paymentRecord.id, {
-      periodStart,
-      periodEnd,
-      status: rawStripeSubscription.status as
-        | 'active'
-        | 'canceled'
-        | 'past_due'
-        | 'trialing'
-        | 'incomplete'
-        | 'incomplete_expired'
-        | 'unpaid',
-      cancelAtPeriodEnd: rawStripeSubscription.cancel_at_period_end,
-      trialStart,
-      trialEnd,
+      priceId: subscription.priceId,
+      periodStart: subscription.periodStart || subscription.currentPeriodStart,
+      periodEnd: subscription.periodEnd || subscription.currentPeriodEnd,
+      status: subscription.status,
+      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+      trialStart: subscription.trialStart,
+      trialEnd: subscription.trialEnd,
     });
 
     return {
       success: true,
       data: { updated: true },
-      message: `订阅信息同步成功 - 期间: ${periodStart?.toLocaleDateString()} 到 ${periodEnd?.toLocaleDateString()}`,
+      message: await getPaymentActionMessage('syncSubscriptionSuccess'),
     };
   } catch (error) {
     console.error('[sync-subscription-periods] syncSingleSubscription error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : '同步订阅信息失败',
+      error: await getPaymentActionMessage('syncSubscriptionFailed'),
     };
   }
 }

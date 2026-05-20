@@ -50,6 +50,13 @@
       "when": 1770419463133,
       "tag": "0006_marvelous_nomad",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1771430400000,
+      "tag": "0007_add_payment_provider_columns",
+      "breakpoints": true
     }
   ]
 }

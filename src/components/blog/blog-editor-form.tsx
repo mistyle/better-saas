@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ interface BlogEditorFormProps {
 }
 
 export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
+  const t = useTranslations('blogAdmin.editor');
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -104,11 +106,11 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
 
   const savePost = async (status?: string) => {
     if (!title.trim()) {
-      toast.error('标题不能为空');
+      toast.error(t('titleRequired'));
       return;
     }
     if (!slug.trim()) {
-      toast.error('Slug 不能为空');
+      toast.error(t('slugRequired'));
       return;
     }
 
@@ -126,7 +128,12 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
       ...(status ? { status } : {}),
     };
 
-    const url = mode === 'create' ? '/api/blog' : `/api/blog/${post!.id}`;
+    if (mode === 'edit' && !post?.id) {
+      throw new Error(t('saveError'));
+    }
+
+    const postId = post?.id;
+    const url = mode === 'create' ? '/api/blog' : `/api/blog/${postId}`;
     const method = mode === 'create' ? 'POST' : 'PUT';
 
     const response = await fetch(url, {
@@ -137,7 +144,8 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
 
     if (!response.ok) {
       const err = await response.json();
-      throw new Error(err.error || '保存失败');
+      console.error('[blog-editor-form] save failed:', err.error);
+      throw new Error(t('saveError'));
     }
 
     return response.json();
@@ -147,12 +155,12 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
     setSaving(true);
     try {
       const result = await savePost('draft');
-      toast.success('保存成功');
+      toast.success(t('saveSuccess'));
       if (mode === 'create' && result?.id) {
         router.push(`/dashboard/blog/${result.id}/edit`);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '保存失败');
+      toast.error(error instanceof Error ? error.message : t('saveError'));
     } finally {
       setSaving(false);
     }
@@ -163,21 +171,25 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
     try {
       if (mode === 'create') {
         await savePost('published');
-        toast.success('发布成功');
+        toast.success(t('publishSuccess'));
         router.push('/dashboard/blog');
       } else {
         // Save first, then publish
         await savePost();
-        const res = await fetch(`/api/blog/${post!.id}/publish`, { method: 'POST' });
+        if (!post?.id) {
+          throw new Error(t('publishError'));
+        }
+        const res = await fetch(`/api/blog/${post.id}/publish`, { method: 'POST' });
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(err.error || '发布失败');
+          console.error('[blog-editor-form] publish failed:', err.error);
+          throw new Error(t('publishError'));
         }
-        toast.success('发布成功');
+        toast.success(t('publishSuccess'));
         router.push('/dashboard/blog');
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '发布失败');
+      toast.error(error instanceof Error ? error.message : t('publishError'));
     } finally {
       setPublishing(false);
     }
@@ -188,17 +200,17 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
       {/* Action buttons */}
       <div className="flex items-center justify-between">
         <h1 className="font-bold text-2xl">
-          {mode === 'create' ? '新建文章' : '编辑文章'}
+          {mode === 'create' ? t('createTitle') : t('editTitle')}
         </h1>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => router.push('/dashboard/blog')}>
-            取消
+            {t('cancel')}
           </Button>
           <Button variant="secondary" onClick={handleSave} disabled={saving}>
-            {saving ? '保存中...' : '保存草稿'}
+            {saving ? t('saving') : t('saveDraft')}
           </Button>
           <Button onClick={handlePublish} disabled={publishing}>
-            {publishing ? '发布中...' : '发布'}
+            {publishing ? t('publishing') : t('publish')}
           </Button>
         </div>
       </div>
@@ -206,12 +218,12 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
       {/* Metadata section */}
       <div className="grid gap-4 rounded-lg border bg-card p-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="title">标题 *</Label>
+          <Label htmlFor="title">{t('title')}</Label>
           <Input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="文章标题"
+            placeholder={t('titlePlaceholder')}
           />
         </div>
 
@@ -225,13 +237,13 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
               placeholder="url-friendly-slug"
             />
             <Button type="button" variant="outline" size="sm" onClick={generateSlug}>
-              生成
+              {t('generate')}
             </Button>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="locale">语言</Label>
+          <Label htmlFor="locale">{t('language')}</Label>
           <Select value={locale} onValueChange={setLocale}>
             <SelectTrigger>
               <SelectValue />
@@ -244,27 +256,27 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="author">作者</Label>
+          <Label htmlFor="author">{t('author')}</Label>
           <Input
             id="author"
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
-            placeholder="作者名称"
+            placeholder={t('authorPlaceholder')}
           />
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="description">描述</Label>
+          <Label htmlFor="description">{t('description')}</Label>
           <Input
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="文章描述（SEO）"
+            placeholder={t('descriptionPlaceholder')}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="coverImage">封面图片 URL</Label>
+          <Label htmlFor="coverImage">{t('coverImage')}</Label>
           <Input
             id="coverImage"
             value={coverImage}
@@ -274,13 +286,13 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="category">分类</Label>
+          <Label htmlFor="category">{t('category')}</Label>
           <Select value={categoryId} onValueChange={setCategoryId}>
             <SelectTrigger>
-              <SelectValue placeholder="选择分类" />
+              <SelectValue placeholder={t('categoryPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">无分类</SelectItem>
+              <SelectItem value="none">{t('noCategory')}</SelectItem>
               {categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
                   {cat.name}
@@ -291,7 +303,7 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="tags">标签（逗号分隔）</Label>
+          <Label htmlFor="tags">{t('tags')}</Label>
           <Input
             id="tags"
             value={tagsStr}
@@ -303,8 +315,12 @@ export function BlogEditorForm({ post, mode }: BlogEditorFormProps) {
 
       {/* Editor */}
       <div>
-        <Label className="mb-2 block">内容</Label>
-        <BlogEditor content={content} onChange={handleContentChange} />
+        <Label className="mb-2 block">{t('content')}</Label>
+        <BlogEditor
+          content={content}
+          onChange={handleContentChange}
+          placeholder={t('contentPlaceholder')}
+        />
       </div>
     </div>
   );

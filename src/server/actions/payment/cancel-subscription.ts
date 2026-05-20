@@ -1,9 +1,10 @@
 'use server';
 
 import { getServerSession } from '@/lib/auth/server-session';
-import { getPaymentProvider } from '@/payment/service';
-import type { ActionResult } from '@/payment/types';
+import { createPaymentProvider } from '@/payment/service';
+import type { ActionResult, PaymentProviderName } from '@/payment/types';
 import { paymentRepository } from '@/server/db/repositories/payment-repository';
+import { getPaymentActionMessage } from './action-messages';
 
 export async function cancelSubscription(
   subscriptionId: string
@@ -15,36 +16,34 @@ export async function cancelSubscription(
     if (!session?.user) {
       return {
         success: false,
-        error: '请先登录',
+        error: await getPaymentActionMessage('loginRequired'),
       };
     }
 
-    // Verify subscription belongs to current user
     const paymentRecord = await paymentRepository.findBySubscriptionId(subscriptionId);
     if (!paymentRecord || paymentRecord.userId !== session.user.id) {
       return {
         success: false,
-        error: '订阅不存在或无权操作',
+        error: await getPaymentActionMessage('subscriptionNotFoundOrUnauthorized'),
       };
     }
 
-    const provider = getPaymentProvider();
+    const provider = createPaymentProvider(
+      (paymentRecord.provider || 'stripe') as PaymentProviderName
+    );
 
-    // Cancel subscription via active provider
     const canceled = await provider.cancelSubscription(subscriptionId);
     if (!canceled) {
       return {
         success: false,
-        error: '取消订阅失败',
+        error: await getPaymentActionMessage('cancelSubscriptionFailed'),
       };
     }
 
-    // Update database record
     await paymentRepository.update(paymentRecord.id, {
       cancelAtPeriodEnd: true,
     });
 
-    // Record event
     await paymentRepository.createEvent({
       paymentId: paymentRecord.id,
       eventType: 'canceled',
@@ -60,13 +59,13 @@ export async function cancelSubscription(
       data: {
         canceled: true,
       },
-      message: '订阅已设置为在当前周期结束后取消',
+      message: await getPaymentActionMessage('cancelSubscriptionSuccess'),
     };
   } catch (error) {
     console.error('[cancel-subscription] cancelSubscription error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : '取消订阅失败',
+      error: await getPaymentActionMessage('cancelSubscriptionFailed'),
     };
   }
 }

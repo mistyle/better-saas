@@ -6,7 +6,7 @@ interface TechStackProps {
   badge?: string;
 }
 
-const TechStack = ({ heading = 'Build With Modern Stack' }: TechStackProps) => {
+const TechStack = (_props: TechStackProps) => {
   const t = useTranslations('techstack');
   const techLogos = [
     {
